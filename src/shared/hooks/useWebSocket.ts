@@ -4,21 +4,24 @@ import { useEffect, useRef, useState } from "react";
 import { WebSocketClient } from "@/infrastructure/websocket/WebSocketClient";
 
 type UseWebSocketOptions = {
-  url: string;
+  url: string | null;
   onMessage: (data: string) => void;
 };
 
-type ConnectionStatus = "connecting" | "connected" | "disconnected";
+export type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
 export function useWebSocket({ url, onMessage }: UseWebSocketOptions) {
   const clientRef = useRef<WebSocketClient | null>(null);
   const onMessageRef = useRef(onMessage);
-  const [status, setStatus] = useState<ConnectionStatus>("connecting");
+  const [status, setStatus] = useState<ConnectionStatus>("disconnected");
 
   // refを最新のコールバックに更新（再接続なしで最新のハンドラを使用）
   onMessageRef.current = onMessage;
 
   useEffect(() => {
+    if (url === null) return;
+
+    setStatus("connecting");
     const client = new WebSocketClient();
     clientRef.current = client;
 
