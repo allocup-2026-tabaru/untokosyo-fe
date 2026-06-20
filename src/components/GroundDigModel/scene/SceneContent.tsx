@@ -37,6 +37,39 @@ type DogPlacement = {
   startDelayMs: number;
 };
 
+type PlayerNameTagProps = {
+  name: string;
+  position: [number, number, number];
+};
+
+function PlayerNameTag({ name, position }: PlayerNameTagProps) {
+  const textWidth = Math.max(0.96, 0.36 + name.length * 0.092);
+  const backgroundWidth = textWidth;
+  const backgroundHeight = 0.26;
+
+  return (
+    <Billboard position={position} follow>
+      <group>
+        <mesh>
+          <boxGeometry args={[backgroundWidth, backgroundHeight, 0.04]} />
+          <meshBasicMaterial color="#000000" transparent opacity={0.38} />
+        </mesh>
+        <Text
+          position={[0, 0, 0.05]}
+          fontSize={0.155}
+          fontWeight={300}
+          color="#ffffff"
+          anchorX="center"
+          anchorY="middle"
+          letterSpacing={0.005}
+        >
+          {name}
+        </Text>
+      </group>
+    </Billboard>
+  );
+}
+
 const getDogPlacements = (playerCount: number): DogPlacement[] => {
   const safeCount = Math.max(0, Math.floor(playerCount));
 
@@ -151,25 +184,14 @@ export function SceneContent({
             startAtMs={index === 0 ? animationStartAtMs : undefined}
             onAnimationTimings={index === 0 ? setRope2AnimationTimings : undefined}
           />
-          <Billboard
+          <PlayerNameTag
+            name={resolvedPlayerNames[index]}
             position={[
               placement.transform.position.x,
               placement.transform.position.y + playerLabelHeight,
               placement.transform.position.z,
             ]}
-            follow
-          >
-            <Text
-              fontSize={0.18}
-              color="#ffffff"
-              outlineWidth={0.03}
-              outlineColor="#2f2010"
-              anchorX="center"
-              anchorY="middle"
-            >
-              {resolvedPlayerNames[index]}
-            </Text>
-          </Billboard>
+          />
         </group>
       ))}
       <FenceField />
