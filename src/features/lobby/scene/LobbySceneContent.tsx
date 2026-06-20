@@ -3,11 +3,11 @@
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { CONFIG } from "@/components/GroundDigModel/config/groundDigModelConfig";
-import { Ground } from "@/components/GroundDigModel/models/Ground";
-import { StaticModel } from "@/components/GroundDigModel/models/StaticModel";
-import { SceneLights } from "@/components/GroundDigModel/scene/SceneLights";
-import { SkyDome } from "@/components/GroundDigModel/scene/SkyDome";
+import { CONFIG } from "@/components/ground-dig-model/config/groundDigModelConfig";
+import { Ground } from "@/components/ground-dig-model/models/Ground";
+import { StaticModel } from "@/components/ground-dig-model/models/StaticModel";
+import { SceneLights } from "@/components/ground-dig-model/scene/SceneLights";
+import { SkyDome } from "@/components/ground-dig-model/scene/SkyDome";
 
 export type LobbySceneVariant = "start" | "room";
 

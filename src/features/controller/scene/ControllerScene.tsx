@@ -4,9 +4,9 @@ import { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
 import { CONFIG } from "../config/controllerSceneConfig";
-import { LoadingOverlay } from "@/components/GroundDigModel/scene/LoadingOverlay";
+import { LoadingOverlay } from "@/components/ground-dig-model/scene/LoadingOverlay";
 import { ControllerSceneContent } from "./ControllerSceneContent";
-import "@/components/GroundDigModel/GroundDigModel.css";
+import "@/components/ground-dig-model/GroundDigModel.css";
 
 export function ControllerScene() {
   const [isLoaded, setIsLoaded] = useState(false);

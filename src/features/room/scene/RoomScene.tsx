@@ -3,10 +3,10 @@
 import { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { CONFIG } from "@/components/GroundDigModel/config/groundDigModelConfig";
-import { LoadingOverlay } from "@/components/GroundDigModel/scene/LoadingOverlay";
+import { CONFIG } from "@/components/ground-dig-model/config/groundDigModelConfig";
+import { LoadingOverlay } from "@/components/ground-dig-model/scene/LoadingOverlay";
 import { RoomSceneContent } from "./RoomSceneContent";
-import "@/components/GroundDigModel/GroundDigModel.css";
+import "@/components/ground-dig-model/GroundDigModel.css";
 
 type Props = {
   playerCount: number;

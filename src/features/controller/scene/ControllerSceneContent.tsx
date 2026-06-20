@@ -3,12 +3,12 @@
 import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { CONFIG } from "../config/controllerSceneConfig";
-import { FenceField } from "@/components/GroundDigModel/models/FenceField";
-import { Forest } from "@/components/GroundDigModel/models/Forest";
-import { Ground } from "@/components/GroundDigModel/models/Ground";
-import { StaticModel } from "@/components/GroundDigModel/models/StaticModel";
-import { SceneLights } from "@/components/GroundDigModel/scene/SceneLights";
-import { SkyDome } from "@/components/GroundDigModel/scene/SkyDome";
+import { FenceField } from "@/components/ground-dig-model/models/FenceField";
+import { Forest } from "@/components/ground-dig-model/models/Forest";
+import { Ground } from "@/components/ground-dig-model/models/Ground";
+import { StaticModel } from "@/components/ground-dig-model/models/StaticModel";
+import { SceneLights } from "@/components/ground-dig-model/scene/SceneLights";
+import { SkyDome } from "@/components/ground-dig-model/scene/SkyDome";
 
 type Props = {
   onReady?: () => void;
