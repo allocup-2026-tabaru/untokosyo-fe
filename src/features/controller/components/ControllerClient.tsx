@@ -3,14 +3,14 @@
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useState } from "react";
 import { ControllerScene } from "@/features/controller/scene/ControllerScene";
-import JellyButton from "@/components/controller/Arrow";
-import { NameInputScreen } from "@/features/controller/NameInputScreen";
+import { PullArrowIndicator } from "./PullArrowIndicator";
+import { NameInputScreen } from "./NameInputScreen";
 
 type Props = {
   roomId: string;
 };
 
-export default function ControllerClient({ roomId }: Props) {
+export function ControllerClient({ roomId }: Props) {
   const [playerName, setPlayerName] = useState<string | null>(null);
 
   return (
@@ -26,7 +26,7 @@ export default function ControllerClient({ roomId }: Props) {
       >
         <Suspense fallback={null}>
           <group position={[0, 0.8, 0]}>
-            <JellyButton operate={playerName !== null} />
+            <PullArrowIndicator operate={playerName !== null} />
           </group>
         </Suspense>
       </Canvas>

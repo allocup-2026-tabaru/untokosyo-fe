@@ -1,4 +1,4 @@
-import ControllerClient from "../../../components/controller/ControllerClient";
+import { ControllerClient } from "@/features/controller/components/ControllerClient";
 
 type Props = {
   params: Promise<{
