@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { OrbitControls } from "@react-three/drei";
+import { Billboard, OrbitControls, Text } from "@react-three/drei";
 import { CONFIG } from "../config/groundDigModelConfig";
 import { DogModel } from "../models/DogModel";
 import { FenceField } from "../models/FenceField";
@@ -17,6 +17,8 @@ import { SkyDome } from "./SkyDome";
 type Props = {
   onReady?: () => void;
   playerCount?: number;
+  playerNames?: string[];
+  playerLabelHeight?: number;
 };
 
 type DogPlacement = {
@@ -70,7 +72,12 @@ const getDogPlacements = (playerCount: number): DogPlacement[] => {
   });
 };
 
-export function SceneContent({ onReady, playerCount = 1 }: Props) {
+export function SceneContent({
+  onReady,
+  playerCount = 1,
+  playerNames = [],
+  playerLabelHeight = 1.45,
+}: Props) {
   const hasNotifiedReadyRef = useRef(false);
   const [rope2AnimationTimings, setRope2AnimationTimings] = useState<{
     pullDurationMs: number;
@@ -78,6 +85,13 @@ export function SceneContent({ onReady, playerCount = 1 }: Props) {
   } | null>(null);
   const characterPlacements = useMemo(() => getDogPlacements(playerCount), [playerCount]);
   const activeCharacterPlacement = characterPlacements[0];
+  const resolvedPlayerNames = useMemo(
+    () =>
+      characterPlacements.map(
+        (_, index) => playerNames[index] ?? `player${index + 1}`
+      ),
+    [characterPlacements, playerNames]
+  );
 
   useEffect(() => {
     if (hasNotifiedReadyRef.current) {
@@ -122,13 +136,33 @@ export function SceneContent({ onReady, playerCount = 1 }: Props) {
         startDelayMs={activeCharacterPlacement?.startDelayMs ?? 0}
       />
       {characterPlacements.map((placement, index) => (
-        <DogModel
-          key={`${index}-${playerCount}`}
-          characterModel={placement.characterModel}
-          transform={placement.transform}
-          startDelayMs={placement.startDelayMs}
-          onAnimationTimings={index === 0 ? setRope2AnimationTimings : undefined}
-        />
+        <group key={`${index}-${playerCount}`}>
+          <DogModel
+            characterModel={placement.characterModel}
+            transform={placement.transform}
+            startDelayMs={placement.startDelayMs}
+            onAnimationTimings={index === 0 ? setRope2AnimationTimings : undefined}
+          />
+          <Billboard
+            position={[
+              placement.transform.position.x,
+              placement.transform.position.y + playerLabelHeight,
+              placement.transform.position.z,
+            ]}
+            follow
+          >
+            <Text
+              fontSize={0.18}
+              color="#ffffff"
+              outlineWidth={0.03}
+              outlineColor="#2f2010"
+              anchorX="center"
+              anchorY="middle"
+            >
+              {resolvedPlayerNames[index]}
+            </Text>
+          </Billboard>
+        </group>
       ))}
       <FenceField />
       <Forest />

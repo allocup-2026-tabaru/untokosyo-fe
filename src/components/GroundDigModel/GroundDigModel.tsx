@@ -11,13 +11,25 @@ import "./GroundDigModel.css";
 type Props = {
   isWaiting?: boolean;
   playerCount?: number;
+  playerNames?: string[];
+  playerLabelHeight?: number;
 };
 
 const TEMP_PLAYER_COUNT = 3;
 
-export default function GroundDigModel({ isWaiting, playerCount }: Props) {
+const getTempPlayerNames = (count: number) =>
+  Array.from({ length: count }, (_, index) => `player${index + 1}`);
+
+export default function GroundDigModel({
+  isWaiting,
+  playerCount,
+  playerNames,
+  playerLabelHeight = 2,
+}: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const resolvedPlayerCount = playerCount ?? TEMP_PLAYER_COUNT;
+  const resolvedPlayerNames =
+    playerNames?.length ? playerNames : getTempPlayerNames(resolvedPlayerCount);
   void isWaiting;
 
   return (
@@ -53,6 +65,8 @@ export default function GroundDigModel({ isWaiting, playerCount }: Props) {
           <SceneContent
             onReady={() => setIsLoaded(true)}
             playerCount={resolvedPlayerCount}
+            playerNames={resolvedPlayerNames}
+            playerLabelHeight={playerLabelHeight}
           />
         </Suspense>
       </Canvas>
