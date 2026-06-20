@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { RoomScene } from "@/features/room/scene/RoomScene";
-import { mockRoomParticipants } from "../constants/mockRoomParticipants";
+import { useHostWebSocket } from "../hooks/useHostWebSocket";
+import { startGame } from "@/infrastructure/http/roomApi";
 import { RoomModal } from "./RoomModal";
 
 type Props = {
@@ -11,9 +12,16 @@ type Props = {
 
 export function RoomPage({ roomId }: Props) {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(true);
+  const { players, hostPlayerID } = useHostWebSocket(roomId);
 
-  // TODO: WebSocket 接続後はリアルタイムの参加者データに差し替え
-  const playerNames = mockRoomParticipants.map((p) => p.name);
+  const playerNames = players.map((p) => p.name);
+
+  const handleStart = async () => {
+    if (hostPlayerID) {
+      await startGame(roomId, hostPlayerID);
+    }
+    setIsRoomModalVisible(false);
+  };
 
   return (
     <main className="relative min-h-screen overflow-hidden">
@@ -25,7 +33,7 @@ export function RoomPage({ roomId }: Props) {
       <RoomModal
         roomId={roomId}
         isVisible={isRoomModalVisible}
-        onStart={() => setIsRoomModalVisible(false)}
+        onStart={handleStart}
       />
     </main>
   );
