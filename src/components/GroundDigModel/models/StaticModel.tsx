@@ -7,7 +7,7 @@ import { CONFIG, type StaticModelProps } from "../config/groundDigModelConfig";
 import { applyTransform, prepareStaticObject } from "../utils/groundDigModelUtils";
 
 export function StaticModel({ url, transform, meshOptions }: StaticModelProps) {
-  const { scene } = useGLTF(url) as GLTF;
+  const { scene } = useGLTF(url) as unknown as GLTF;
 
   const model = useMemo(() => {
     const cloned = prepareStaticObject(scene, meshOptions);

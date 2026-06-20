@@ -11,7 +11,7 @@ import {
 } from "../utils/groundDigModelUtils";
 
 export function FenceField() {
-  const { scene } = useGLTF(CONFIG.fence.path) as GLTF;
+  const { scene } = useGLTF(CONFIG.fence.path) as unknown as GLTF;
 
   const baseModel = useMemo(() => {
     return prepareStaticObject(scene, {
