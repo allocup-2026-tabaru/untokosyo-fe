@@ -1,5 +1,5 @@
 import { RoomLobbyView } from "@/features/lobby/components/room/RoomLobbyView";
 
-export default function RoomPage() {
+export default function LobbyPage() {
   return <RoomLobbyView />;
 }

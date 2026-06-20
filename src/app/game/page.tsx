@@ -18,7 +18,7 @@ export default function GamePage() {
         </div>
         <div>
           <Link
-            href="/room"
+            href="/lobby"
             className="inline-flex items-center rounded-full border border-[#bfa979] px-5 py-3 text-sm font-medium text-[#5e4722] transition hover:bg-[#f7f0e1]"
           >
             ルーム画面に戻る

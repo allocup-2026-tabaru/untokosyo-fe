@@ -10,7 +10,7 @@ type Props = {
 
 export function LobbyRouteFrame({ children }: Props) {
   const pathname = usePathname();
-  const variant = pathname === "/room" ? "room" : "start";
+  const variant = pathname === "/lobby" ? "room" : "start";
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#d5ebf5] text-[#1e2616]">
