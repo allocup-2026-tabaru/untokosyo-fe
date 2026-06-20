@@ -15,10 +15,6 @@ export default function ControllerClient({
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       {/* 必要なら roomId を表示 */}
-      <div className="absolute top-4 left-4 z-20 text-white">
-        コントローラー画面 {roomId}
-      </div>
-
       <BackGroundModel />
 
       <Canvas

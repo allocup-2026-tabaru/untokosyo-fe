@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Color, Vector3 } from "three";
 
-const MAX_PULL = 3;
+const MAX_PULL = 2;
 
 export default function PullArrowIndicator() {
   const [dragging, setDragging] =
@@ -14,7 +14,11 @@ export default function PullArrowIndicator() {
     useState(0);
 
   const [shake, setShake] =
-    useState(0);
+    useState({
+      x: 0,
+      y: 0,
+      r: 0,
+    });
 
   const startPos =
     useRef<Vector3 | null>(null);
@@ -22,10 +26,15 @@ export default function PullArrowIndicator() {
   const vibratedLevel =
     useRef(0);
 
+  const pulse =
+    useRef(0);
+
   useEffect(() => {
     const onPointerDown = (
       e: PointerEvent
     ) => {
+      e.preventDefault();
+
       startPos.current =
         new Vector3(
           e.clientX,
@@ -41,6 +50,8 @@ export default function PullArrowIndicator() {
     const onPointerMove = (
       e: PointerEvent
     ) => {
+      e.preventDefault();
+
       if (
         !dragging ||
         !startPos.current
@@ -82,7 +93,7 @@ export default function PullArrowIndicator() {
         charge > 0.3 &&
         vibratedLevel.current < 1
       ) {
-        navigator.vibrate(10);
+        navigator.vibrate(100);
         vibratedLevel.current = 1;
       }
 
@@ -92,9 +103,9 @@ export default function PullArrowIndicator() {
         vibratedLevel.current < 2
       ) {
         navigator.vibrate([
-          15,
-          20,
-          15,
+          55,
+          40,
+          55,
         ]);
         vibratedLevel.current = 2;
       }
@@ -112,23 +123,54 @@ export default function PullArrowIndicator() {
     const onPointerUp = () => {
       setDragging(false);
       setDragLength(0);
+
+      setShake({
+        x: 0,
+        y: 0,
+        r: 0,
+      });
+
+      pulse.current = 0;
+
       startPos.current = null;
       vibratedLevel.current = 0;
     };
 
+    const onTouchMove = (
+      e: TouchEvent
+    ) => {
+      if (dragging) {
+        e.preventDefault();
+      }
+    };
+
     window.addEventListener(
       "pointerdown",
-      onPointerDown
+      onPointerDown,
+      {
+        passive: false,
+      }
     );
 
     window.addEventListener(
       "pointermove",
-      onPointerMove
+      onPointerMove,
+      {
+        passive: false,
+      }
     );
 
     window.addEventListener(
       "pointerup",
       onPointerUp
+    );
+
+    window.addEventListener(
+      "touchmove",
+      onTouchMove,
+      {
+        passive: false,
+      }
     );
 
     return () => {
@@ -146,6 +188,11 @@ export default function PullArrowIndicator() {
         "pointerup",
         onPointerUp
       );
+
+      window.removeEventListener(
+        "touchmove",
+        onTouchMove
+      );
     };
   }, [dragging]);
 
@@ -154,7 +201,13 @@ export default function PullArrowIndicator() {
       !dragging ||
       dragLength <= 0.05
     ) {
-      setShake(0);
+      setShake({
+        x: 0,
+        y: 0,
+        r: 0,
+      });
+
+      pulse.current = 0;
       return;
     }
 
@@ -163,20 +216,90 @@ export default function PullArrowIndicator() {
       1
     );
 
-    const frequency =
-      10 + charge * 40;
+    const intensity =
+      charge * charge;
 
-    const amplitude =
-      0.02 +
-      charge * 0.05;
+    const t =
+      clock.elapsedTime;
 
-    const nextShake =
+    let frequency =
+      10 +
+      intensity * 35;
+
+    let amplitude =
+      0.003 +
+      intensity * 0.03;
+
+    if (charge > 0.6) {
+      frequency += 15;
+      amplitude += 0.008;
+    }
+
+    const x =
       Math.sin(
-        clock.elapsedTime *
-          frequency
+        t * frequency
       ) * amplitude;
 
-    setShake(nextShake);
+    const y =
+      Math.cos(
+        t *
+          frequency *
+          1.37
+      ) *
+      amplitude *
+      0.6;
+
+    const r =
+      Math.sin(
+        t *
+          frequency *
+          1.81
+      ) *
+      amplitude *
+      0.5;
+
+    let noiseX = 0;
+    let noiseY = 0;
+    let noiseR = 0;
+
+    if (charge > 0.85) {
+      const n =
+        (charge - 0.85) /
+        0.15;
+
+      noiseX =
+        (Math.random() -
+          0.5) *
+        n *
+        0.02;
+
+      noiseY =
+        (Math.random() -
+          0.5) *
+        n *
+        0.012;
+
+      noiseR =
+        (Math.random() -
+          0.5) *
+        n *
+        0.02;
+    }
+
+    setShake({
+      x: x + noiseX,
+      y: y + noiseY,
+      r: r + noiseR,
+    });
+
+    pulse.current =
+      charge > 0.95
+        ? (Math.sin(
+            t * 120
+          ) +
+            1) *
+          0.5
+        : 0;
   });
 
   if (
@@ -191,24 +314,45 @@ export default function PullArrowIndicator() {
     1
   );
 
+  const pulseScale =
+    pulse.current * 0.03;
+
+  const glow =
+    pulse.current;
+
   const arrowColor =
     new Color().lerpColors(
       new Color("#38bdf8"),
-      new Color("#ef4444"),
+      new Color(
+        `rgb(
+          255,
+          ${
+            68 +
+            glow * 100
+          },
+          ${
+            68 +
+            glow * 30
+          }
+        )`
+      ),
       charge
     );
 
   const shaftRadius =
     0.08 +
-    dragLength * 0.045;
+    dragLength * 0.045 +
+    pulseScale;
 
   const headRadius =
     0.54 +
-    charge * 0.04;
+    charge * 0.04 +
+    pulseScale;
 
   const headLength =
     0.25 +
-    charge * 0.5;
+    charge * 0.5 +
+    pulseScale;
 
   const shaftCenter =
     new Vector3(
@@ -228,9 +372,14 @@ export default function PullArrowIndicator() {
     <group
       renderOrder={10}
       position={[
-        shake,
+        shake.x,
+        shake.y,
+        0,
+      ]}
+      rotation={[
         0,
         0,
+        shake.r,
       ]}
     >
       <mesh
