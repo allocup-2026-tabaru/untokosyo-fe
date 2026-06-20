@@ -13,6 +13,19 @@ type Player = {
 };
 type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
+type GameStatus = "waiting" | "playing" | "finished";
+
+type GameResult = {
+  winnerPlayerID: string;
+  winnerName: string;
+  standings: Array<{
+    playerID: string;
+    name: string;
+    pullAccumulation: number;
+    rank: number;
+  }>;
+};
+
 type HostSessionData = {
   hostPlayerID: string;
   token: string;
@@ -42,6 +55,10 @@ export function useHostWebSocket(roomID: string) {
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
   const [players, setPlayers] = useState<Player[]>([]);
   const [hostPlayerID, setHostPlayerID] = useState<string | null>(null);
+  const [gameStatus, setGameStatus] = useState<GameStatus>("waiting");
+  const [pullingPlayerIDs, setPullingPlayerIDs] = useState<string[]>([]);
+  const [eliminatedPlayerIDs, setEliminatedPlayerIDs] = useState<string[]>([]);
+  const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const clientRef = useRef<HostWebSocketClient | null>(null);
 
   useEffect(() => {
@@ -62,6 +79,18 @@ export function useHostWebSocket(roomID: string) {
     client.onEvent((event: HostServerEvent) => {
       if (event.type === "room_state" || event.type === "player_joined") {
         fetchPlayers(roomID).then(setPlayers).catch(console.error);
+      } else if (event.type === "game_start") {
+        setGameStatus("playing");
+      } else if (event.type === "player_update") {
+        const { playerID, isPulling } = event.payload;
+        setPullingPlayerIDs((prev) =>
+          isPulling ? [...prev.filter((id) => id !== playerID), playerID] : prev.filter((id) => id !== playerID)
+        );
+      } else if (event.type === "extracted") {
+        setEliminatedPlayerIDs((prev) => [...prev, ...event.payload.eliminatedPlayerIDs]);
+      } else if (event.type === "game_finished") {
+        setGameStatus("finished");
+        setGameResult(event.payload);
       }
     });
 
@@ -72,5 +101,5 @@ export function useHostWebSocket(roomID: string) {
     };
   }, [roomID]);
 
-  return { status, players, hostPlayerID };
+  return { status, players, hostPlayerID, gameStatus, pullingPlayerIDs, eliminatedPlayerIDs, gameResult };
 }
