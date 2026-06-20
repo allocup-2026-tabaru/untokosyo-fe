@@ -27,6 +27,7 @@ type Props = {
   playerAvatars?: PlayerAvatarInfo[];
   playerSlipFlags?: boolean[];
   playerLabelHeight?: number;
+  kabuEscapeTriggered?: boolean;
 };
 
 export function RoomSceneContent({
@@ -37,6 +38,7 @@ export function RoomSceneContent({
   playerAvatars,
   playerSlipFlags = [],
   playerLabelHeight = 1.45,
+  kabuEscapeTriggered = false,
 }: Props) {
   const hasNotifiedReadyRef = useRef(false);
   const [rope2AnimationTimings, setRope2AnimationTimings] = useState<{
@@ -104,6 +106,7 @@ export function RoomSceneContent({
         motionWindow={CONFIG.models.rope2.motionWindow}
         kabuMeshOptions={{ castShadow: true, receiveShadow: true }}
         ropeMeshOptions={{ castShadow: true, receiveShadow: true }}
+        kabuEscape={kabuEscapeTriggered}
       />
       <Rope2Model
         transform={CONFIG.models.rope2}

@@ -32,6 +32,7 @@ type Props = {
   ropeMeshOptions?: MeshOptions;
   kabuTransform?: TransformConfig;
   ropeTransform?: TransformConfig;
+  kabuEscape?: boolean;
 };
 
 const DEFAULT_MOTION_WINDOW: RelativeMotionWindowConfig = {
@@ -172,6 +173,7 @@ export function KabuRopeRig({
   ropeMeshOptions,
   kabuTransform = CONFIG.models.kabu,
   ropeTransform = CONFIG.models.rope,
+  kabuEscape,
 }: Props) {
   const { scene: kabuScene } = useGLTF(CONFIG.models.kabu.path) as unknown as GLTF;
   const { scene: ropeScene } = useGLTF(CONFIG.models.rope.path) as unknown as GLTF;
@@ -324,9 +326,10 @@ export function KabuRopeRig({
     }
 
     const now = performance.now();
+    const kabuEscapeActive = kabuEscape ?? isKabuEscapeEnabled();
     const kabu = kabuRef.current;
     if (kabu) {
-      if (!isKabuEscapeEnabled()) {
+      if (!kabuEscapeActive) {
         kabu.visible = true;
         kabu.position.copy(kabuBasePositionRef.current);
         kabuEscapeStartAtMsRef.current = null;
@@ -356,7 +359,7 @@ export function KabuRopeRig({
 
     const rope = ropeRef.current;
     if (rope) {
-      if (!isKabuEscapeEnabled()) {
+      if (!kabuEscapeActive) {
         rope.visible = true;
         rope.position.copy(ropeBasePositionRef.current);
         ropeEscapeStartAtMsRef.current = null;

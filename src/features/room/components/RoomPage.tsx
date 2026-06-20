@@ -52,6 +52,7 @@ export function RoomPage({ roomId }: Props) {
         playerAvatars={playerAvatars.length > 0 ? playerAvatars : undefined}
         isWaiting={isRoomModalVisible}
         playerSlipFlags={playerSlipFlags}
+        kabuEscapeTriggered={eliminatedPlayerIDs.length > 0}
       />
       <RoomModal
         roomId={roomId}
