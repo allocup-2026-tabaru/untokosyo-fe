@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { OrbitControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
-import { CONFIG } from "../config/groundDigModelConfig_controller";
+import { CONFIG } from "../config/groundDigModelConfigController";
 import { FenceField } from "../models/FenceField";
 import { Forest } from "../models/Forest";
 import { Ground } from "../models/Ground";
@@ -73,21 +73,6 @@ export function SceneContent({ onReady }: Props) {
       />
       <FenceField />
       <Forest />
-      {/* <OrbitControls
-        makeDefault
-        target={[
-          cameraConfig.target.x,
-          cameraConfig.target.y,
-          cameraConfig.target.z,
-        ]}
-        enableDamping
-        dampingFactor={0.07}
-        enablePan={false}
-        minDistance={4.5}
-        maxDistance={15}
-        minPolarAngle={Math.PI * 0.2}
-        maxPolarAngle={Math.PI * 0.48}
-      /> */}
     </>
   );
 }

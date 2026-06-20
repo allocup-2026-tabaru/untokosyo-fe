@@ -3,9 +3,9 @@
 import { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { CONFIG } from "../../components/GroundDigModel/config/groundDigModelConfig_controller";
+import { CONFIG } from "../../components/GroundDigModel/config/groundDigModelConfigController";
 import { LoadingOverlay } from "../../components/GroundDigModel/scene/LoadingOverlay";
-import { SceneContent } from "../../components/GroundDigModel/scene/SceneContent_controller";
+import { SceneContent } from "../../components/GroundDigModel/scene/SceneContentController";
 import "./BackGroundModel.css";
 
 export default function BackGroundModel() {
