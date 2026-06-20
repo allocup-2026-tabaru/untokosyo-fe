@@ -6,7 +6,13 @@ import { Color, Vector3 } from "three";
 
 const MAX_PULL = 2;
 
-export default function PullArrowIndicator() {
+type Props = {
+  operate: boolean;
+};
+
+export default function PullArrowIndicator({
+  operate,
+}: Props) {
   const [dragging, setDragging] =
     useState(false);
 
@@ -30,9 +36,31 @@ export default function PullArrowIndicator() {
     useRef(0);
 
   useEffect(() => {
+    if (operate) {
+      return;
+    }
+
+    setDragging(false);
+    setDragLength(0);
+    setShake({
+      x: 0,
+      y: 0,
+      r: 0,
+    });
+
+    pulse.current = 0;
+    startPos.current = null;
+    vibratedLevel.current = 0;
+  }, [operate]);
+
+  useEffect(() => {
     const onPointerDown = (
       e: PointerEvent
     ) => {
+      if (!operate) {
+        return;
+      }
+
       e.preventDefault();
 
       startPos.current =
@@ -50,6 +78,10 @@ export default function PullArrowIndicator() {
     const onPointerMove = (
       e: PointerEvent
     ) => {
+      if (!operate) {
+        return;
+      }
+
       e.preventDefault();
 
       if (
@@ -88,9 +120,7 @@ export default function PullArrowIndicator() {
           1
         );
 
-      // ここからバイブレーション周りの実装→実機で振動が確認できないが、
-      // 解決策も見つからないため一度放置している。
-
+      // ここからバイブレーション周りの実装
       if (
         "vibrate" in navigator &&
         charge > 0.3 &&
@@ -123,8 +153,6 @@ export default function PullArrowIndicator() {
       }
     };
 
-    // ここまでバイブレーション周りの設定
-
     const onPointerUp = () => {
       setDragging(false);
       setDragLength(0);
@@ -144,7 +172,10 @@ export default function PullArrowIndicator() {
     const onTouchMove = (
       e: TouchEvent
     ) => {
-      if (dragging) {
+      if (
+        operate &&
+        dragging
+      ) {
         e.preventDefault();
       }
     };
@@ -199,10 +230,11 @@ export default function PullArrowIndicator() {
         onTouchMove
       );
     };
-  }, [dragging]);
+  }, [dragging, operate]);
 
   useFrame(({ clock }) => {
     if (
+      !operate ||
       !dragging ||
       dragLength <= 0.05
     ) {
@@ -308,6 +340,7 @@ export default function PullArrowIndicator() {
   });
 
   if (
+    !operate ||
     !dragging ||
     dragLength <= 0.05
   ) {
