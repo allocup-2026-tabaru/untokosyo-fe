@@ -43,11 +43,16 @@ const PIVOT_Y_OFFSET = -2;
 const DEBUG_AXIS_HALF_LENGTH = 1.25;
 const DEFAULT_VIBRATION_AMPLITUDE_RAD = 0.005;
 const DEFAULT_VIBRATION_INTERVAL_MS = 100;
+const DEFAULT_KABU_ESCAPE_DISTANCE = 10;
+const DEFAULT_KABU_ESCAPE_DURATION_MS = 450;
 
 type KabuRopeRigDebugConfig = {
   enableVibration?: boolean;
   vibrationAmplitudeRad?: number;
   vibrationIntervalMs?: number;
+  kabuEscape?: boolean;
+  kabuEscapeDistance?: number;
+  kabuEscapeDurationMs?: number;
 };
 
 declare global {
@@ -89,6 +94,38 @@ const getVibrationIntervalMs = () => {
   return Math.max(16, vibrationIntervalMs);
 };
 
+const isKabuEscapeEnabled = () => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.__untokosyoKabuRopeRigDebug?.kabuEscape ?? false;
+};
+
+const getKabuEscapeDistance = () => {
+  if (typeof window === "undefined") {
+    return DEFAULT_KABU_ESCAPE_DISTANCE;
+  }
+
+  const debugConfig = window.__untokosyoKabuRopeRigDebug;
+  const kabuEscapeDistance =
+    debugConfig?.kabuEscapeDistance ?? DEFAULT_KABU_ESCAPE_DISTANCE;
+
+  return Math.max(0, kabuEscapeDistance);
+};
+
+const getKabuEscapeDurationMs = () => {
+  if (typeof window === "undefined") {
+    return DEFAULT_KABU_ESCAPE_DURATION_MS;
+  }
+
+  const debugConfig = window.__untokosyoKabuRopeRigDebug;
+  const kabuEscapeDurationMs =
+    debugConfig?.kabuEscapeDurationMs ?? DEFAULT_KABU_ESCAPE_DURATION_MS;
+
+  return Math.max(16, kabuEscapeDurationMs);
+};
+
 export function KabuRopeRig({
   animation = CONFIG.characterModels[0].animation,
   animationTimings = null,
@@ -104,6 +141,9 @@ export function KabuRopeRig({
   const { scene: kabuScene } = useGLTF(CONFIG.models.kabu.path) as unknown as GLTF;
   const { scene: ropeScene } = useGLTF(CONFIG.models.rope.path) as unknown as GLTF;
   const rigRef = useRef<THREE.Group | null>(null);
+  const kabuRef = useRef<THREE.Object3D | null>(null);
+  const kabuBasePositionRef = useRef(new THREE.Vector3());
+  const kabuEscapeStartAtMsRef = useRef<number | null>(null);
   const phaseRef = useRef<"pull" | "pull_out" | null>(null);
   const phaseTotalDurationMsRef = useRef(0);
   const phaseStartAtMsRef = useRef(0);
@@ -153,20 +193,34 @@ export function KabuRopeRig({
       rigGroup.add(axisLine);
     }
 
-    return rigGroup;
+    return {
+      rigGroup,
+      kabu,
+      kabuBasePosition: kabu.position.clone(),
+    };
   }, [kabuMeshOptions, kabuScene, kabuTransform, ropeMeshOptions, ropeScene, ropeTransform, showDebugAxis]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && !window.__untokosyoKabuRopeRigDebug) {
-      // DevTools から `window.__untokosyoKabuRopeRigDebug.enableVibration = false` のように変更する。
+      // DevTools から `window.__untokosyoKabuRopeRigDebug.kabuEscape = true` のように変更する。
       window.__untokosyoKabuRopeRigDebug = {
         enableVibration: false,
         vibrationAmplitudeRad: DEFAULT_VIBRATION_AMPLITUDE_RAD,
         vibrationIntervalMs: DEFAULT_VIBRATION_INTERVAL_MS,
+        kabuEscape: false,
+        kabuEscapeDistance: DEFAULT_KABU_ESCAPE_DISTANCE,
+        kabuEscapeDurationMs: DEFAULT_KABU_ESCAPE_DURATION_MS,
       };
+      console.info(
+        "[KabuRopeRig] debug controls: window.__untokosyoKabuRopeRigDebug.kabuEscape = true"
+      );
     }
 
-    rigRef.current = rig;
+    rigRef.current = rig.rigGroup;
+    kabuRef.current = rig.kabu;
+    kabuBasePositionRef.current.copy(rig.kabuBasePosition);
+    kabuEscapeStartAtMsRef.current = null;
+    rig.kabu.position.copy(rig.kabuBasePosition);
   }, [rig]);
 
   useEffect(() => {
@@ -216,6 +270,28 @@ export function KabuRopeRig({
       return;
     }
 
+    const now = performance.now();
+    const kabu = kabuRef.current;
+    if (kabu) {
+      if (!isKabuEscapeEnabled()) {
+        kabu.position.copy(kabuBasePositionRef.current);
+        kabuEscapeStartAtMsRef.current = null;
+      } else {
+        if (kabuEscapeStartAtMsRef.current === null) {
+          kabuEscapeStartAtMsRef.current = now;
+        }
+
+        const escapeDurationMs = getKabuEscapeDurationMs();
+        const escapeDistance = getKabuEscapeDistance();
+        const elapsedMs = now - kabuEscapeStartAtMsRef.current;
+        const progress = THREE.MathUtils.clamp(elapsedMs / escapeDurationMs, 0, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        kabu.position.copy(kabuBasePositionRef.current);
+        kabu.position.y = kabuBasePositionRef.current.y + escapeDistance * eased;
+      }
+    }
+
     if (!phaseRef.current || phaseTotalDurationMsRef.current <= 0) {
       current.rotation.set(0, 0, 0);
       return;
@@ -226,7 +302,6 @@ export function KabuRopeRig({
       return;
     }
 
-    const now = performance.now();
     if (now >= vibrationNextUpdateAtMsRef.current) {
       vibrationCurrentRef.current.copy(vibrationTargetRef.current);
 
@@ -258,7 +333,7 @@ export function KabuRopeRig({
       (vibrationTargetRef.current.z - vibrationCurrentRef.current.z) * eased;
   });
 
-  return <primitive object={rig} />;
+  return <primitive object={rig.rigGroup} />;
 }
 
 useGLTF.preload(CONFIG.models.kabu.path);
