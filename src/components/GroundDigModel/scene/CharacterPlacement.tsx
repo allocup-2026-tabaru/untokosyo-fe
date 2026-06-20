@@ -28,6 +28,7 @@ export function CharacterPlacement({
     <group>
       <DogModel
         characterModel={placement.characterModel}
+        materialColors={placement.materialColors}
         transform={placement.transform}
         startDelayMs={placement.startDelayMs}
         startAtMs={isPrimary ? animationStartAtMs : undefined}

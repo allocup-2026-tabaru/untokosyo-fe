@@ -32,7 +32,10 @@ export function SceneContent({
     pullDurationMs: number;
     pullOutDurationMs: number;
   } | null>(null);
-  const characterPlacements = useMemo(() => getDogPlacements(playerCount), [playerCount]);
+  const characterPlacements = useMemo(
+    () => getDogPlacements(playerCount),
+    [playerCount]
+  );
   const activeCharacterPlacement = characterPlacements[0];
   const animationStartDelayMs = activeCharacterPlacement?.startDelayMs ?? 0;
   const animationStartAtMs = useMemo(

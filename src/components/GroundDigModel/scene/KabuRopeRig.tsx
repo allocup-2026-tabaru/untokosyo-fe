@@ -55,8 +55,8 @@ export function KabuRopeRig({
   kabuTransform = CONFIG.models.kabu,
   ropeTransform = CONFIG.models.rope,
 }: Props) {
-  const { scene: kabuScene } = useGLTF(CONFIG.models.kabu.path) as GLTF;
-  const { scene: ropeScene } = useGLTF(CONFIG.models.rope.path) as GLTF;
+  const { scene: kabuScene } = useGLTF(CONFIG.models.kabu.path) as unknown as GLTF;
+  const { scene: ropeScene } = useGLTF(CONFIG.models.rope.path) as unknown as GLTF;
   const rigRef = useRef<THREE.Group | null>(null);
   const phaseRef = useRef<"pull" | "pull_out" | null>(null);
   const phaseStartTimeRef = useRef(0);

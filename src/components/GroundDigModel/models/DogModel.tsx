@@ -18,6 +18,7 @@ import {
 
 type Props = {
   characterModel?: CharacterModelConfig;
+  materialColors?: Record<string, string>;
   transform?: TransformConfig;
   startDelayMs?: number;
   startAtMs?: number;
@@ -29,6 +30,7 @@ type Props = {
 
 export function DogModel({
   characterModel = CONFIG.characterModels[0],
+  materialColors,
   transform,
   startDelayMs = 0,
   startAtMs,
@@ -45,13 +47,13 @@ export function DogModel({
   const clonedModel = useMemo(() => {
     const cloned = SkeletonUtils.clone(scene) as THREE.Group;
     applyTransform(cloned, transform ?? characterModel);
-    recolorNamedMaterials(cloned, characterModel.materialColors);
+    recolorNamedMaterials(cloned, materialColors ?? characterModel.materialColors);
     setupMeshes(cloned, {
       castShadow: true,
       receiveShadow: true,
     });
     return cloned;
-  }, [scene, transform, characterModel]);
+  }, [characterModel, materialColors, scene, transform]);
 
   useEffect(() => {
     const settings = characterModel.animation;

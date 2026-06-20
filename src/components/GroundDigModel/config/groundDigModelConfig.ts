@@ -140,10 +140,10 @@ export const CONFIG = {
       rotation: { y: -Math.PI / 2 },
       scale: 0.5,
       materialColors: {
-        base_color: "#ffffff",
-        accent_color: "#ff9900",
+        base_color: "#9d7b5a",
+        accent_color: "#b48a63",
         nose_color: "#222222",
-        tail_color: "#aa7744",
+        tail_color: "#ab805a",
       },
       animation: {
         pullName: "pull",
@@ -162,10 +162,9 @@ export const CONFIG = {
       rotation: { y: -Math.PI / 2 },
       scale: 0.5,
       materialColors: {
-        base_color: "#ffffff",
-        accent_color: "#ff9900",
-        nose_color: "#222222",
-        tail_color: "#aa7744",
+        clothBase: "#f6f0e6",
+        cloth_2: "#8a7f73",
+        bottoms: "#6a5b50",
       },
       animation: {
         pullName: "pull",
@@ -185,10 +184,10 @@ export const CONFIG = {
     rotation: { y: -Math.PI / 2 },
     scale: 0.5,
     materialColors: {
-      base_color: "#ffffff",
-      accent_color: "#ff9900",
+      base_color: "#9d7b5a",
+      accent_color: "#b48a63",
       nose_color: "#222222",
-      tail_color: "#aa7744",
+      tail_color: "#ab805a",
     },
     animation: {
       pullName: "pull",

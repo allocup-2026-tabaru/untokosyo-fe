@@ -106,10 +106,30 @@ export const CONFIG = {
     rotation: { y: -Math.PI / 2 },
     scale: 0.5,
     materialColors: {
-      base_color: "#ffffff",
-      accent_color: "#ff9900",
+      base_color: "#9d7b5a",
+      accent_color: "#b48a63",
       nose_color: "#222222",
-      tail_color: "#aa7744",
+      tail_color: "#ab805a",
+    },
+    animation: {
+      pullName: "pull",
+      pullOutName: "pull_out",
+      pullSpeed: 1.0,
+      pullOutSpeed: 1.0,
+      pauseAfterPull: 0.4,
+      pauseAfterPullOut: 0.6,
+      fadeDuration: 0.15,
+    },
+  },
+  jiji2: {
+    path: `${modelBaseUrl}/jiji2.glb`,
+    position: { x: 5, y: 0.3, z: 0 },
+    rotation: { y: -Math.PI / 2 },
+    scale: 0.5,
+    materialColors: {
+      clothBase: "#f6f0e6",
+      cloth_2: "#8a7f73",
+      bottoms: "#6a5b50",
     },
     animation: {
       pullName: "pull",
