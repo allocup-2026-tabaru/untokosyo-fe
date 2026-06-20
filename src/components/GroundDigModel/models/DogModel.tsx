@@ -20,6 +20,7 @@ type Props = {
   characterModel?: CharacterModelConfig;
   transform?: TransformConfig;
   startDelayMs?: number;
+  startAtMs?: number;
   onAnimationTimings?: (timings: {
     pullDurationMs: number;
     pullOutDurationMs: number;
@@ -30,6 +31,7 @@ export function DogModel({
   characterModel = CONFIG.characterModels[0],
   transform,
   startDelayMs = 0,
+  startAtMs,
   onAnimationTimings,
 }: Props) {
   const groupRef = useRef<THREE.Group>(null);
@@ -99,7 +101,11 @@ export function DogModel({
     };
 
     mixer.addEventListener("finished", onFinished);
-    timeoutId = window.setTimeout(playNext, startDelayMs);
+    const initialDelayMs =
+      startAtMs !== undefined
+        ? Math.max(0, startAtMs - performance.now())
+        : startDelayMs;
+    timeoutId = window.setTimeout(playNext, initialDelayMs);
 
     return () => {
       mixer.removeEventListener("finished", onFinished);
@@ -108,7 +114,14 @@ export function DogModel({
       }
       mixer.stopAllAction();
     };
-  }, [actions, characterModel.animation, mixer, onAnimationTimings, startDelayMs]);
+  }, [
+    actions,
+    characterModel.animation,
+    mixer,
+    onAnimationTimings,
+    startAtMs,
+    startDelayMs,
+  ]);
 
   return (
     <group ref={groupRef}>

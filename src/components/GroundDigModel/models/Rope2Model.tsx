@@ -22,6 +22,7 @@ type Props = {
   meshOptions?: MeshOptions;
   animation?: CharacterAnimationConfig;
   startDelayMs?: number;
+  startAtMs?: number;
   animationTimings?: {
     pullDurationMs: number;
     pullOutDurationMs: number;
@@ -40,6 +41,7 @@ export function Rope2Model({
   meshOptions,
   animation = CONFIG.characterModels[0].animation,
   startDelayMs = 0,
+  startAtMs,
   animationTimings = null,
   motionWindow = CONFIG.models.rope2.motionWindow ?? DEFAULT_MOTION_WINDOW,
 }: Props) {
@@ -117,10 +119,10 @@ export function Rope2Model({
     phaseMotionEndMsRef.current = 0;
     timeoutRef.current = window.setTimeout(() => {
       schedulePhase("pull");
-    }, startDelayMs);
+    }, startAtMs !== undefined ? Math.max(0, startAtMs - performance.now()) : startDelayMs);
 
     return clearTimer;
-  }, [animation, animationTimings, startDelayMs, transform.position?.x]);
+  }, [animation, animationTimings, startAtMs, startDelayMs, transform.position?.x]);
 
   useFrame(() => {
     const current = modelRef.current;

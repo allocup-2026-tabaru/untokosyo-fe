@@ -25,6 +25,7 @@ type Props = {
   } | null;
   motionWindow?: RelativeMotionWindowConfig;
   startDelayMs?: number;
+  startAtMs?: number;
   showDebugAxis?: boolean;
   kabuMeshOptions?: MeshOptions;
   ropeMeshOptions?: MeshOptions;
@@ -47,6 +48,7 @@ export function KabuRopeRig({
   animationTimings = null,
   motionWindow = CONFIG.models.rope2.motionWindow ?? DEFAULT_MOTION_WINDOW,
   startDelayMs = 0,
+  startAtMs,
   showDebugAxis = false,
   kabuMeshOptions,
   ropeMeshOptions,
@@ -163,12 +165,16 @@ export function KabuRopeRig({
     phaseMotionEndMsRef.current = 0;
     targetRotationRef.current = 0;
 
+    const initialDelayMs =
+      startAtMs !== undefined
+        ? Math.max(0, startAtMs - performance.now())
+        : startDelayMs;
     timeoutRef.current = window.setTimeout(() => {
       schedulePhase("pull");
-    }, startDelayMs);
+    }, initialDelayMs);
 
     return clearTimer;
-  }, [animation, animationTimings, motionWindow, startDelayMs]);
+  }, [animation, animationTimings, motionWindow, startAtMs, startDelayMs]);
 
   useFrame(() => {
     const current = rigRef.current;

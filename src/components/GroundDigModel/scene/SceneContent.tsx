@@ -85,6 +85,11 @@ export function SceneContent({
   } | null>(null);
   const characterPlacements = useMemo(() => getDogPlacements(playerCount), [playerCount]);
   const activeCharacterPlacement = characterPlacements[0];
+  const animationStartDelayMs = activeCharacterPlacement?.startDelayMs ?? 0;
+  const animationStartAtMs = useMemo(
+    () => performance.now() + animationStartDelayMs,
+    [animationStartDelayMs]
+  );
   const resolvedPlayerNames = useMemo(
     () =>
       characterPlacements.map(
@@ -124,6 +129,7 @@ export function SceneContent({
         animation={activeCharacterPlacement?.characterModel.animation}
         animationTimings={rope2AnimationTimings}
         startDelayMs={activeCharacterPlacement?.startDelayMs ?? 0}
+        startAtMs={animationStartAtMs}
         motionWindow={CONFIG.models.rope2.motionWindow}
         kabuMeshOptions={{ castShadow: true, receiveShadow: true }}
         ropeMeshOptions={{ castShadow: true, receiveShadow: true }}
@@ -134,6 +140,7 @@ export function SceneContent({
         animation={activeCharacterPlacement?.characterModel.animation}
         animationTimings={rope2AnimationTimings}
         startDelayMs={activeCharacterPlacement?.startDelayMs ?? 0}
+        startAtMs={animationStartAtMs}
       />
       {characterPlacements.map((placement, index) => (
         <group key={`${index}-${playerCount}`}>
@@ -141,6 +148,7 @@ export function SceneContent({
             characterModel={placement.characterModel}
             transform={placement.transform}
             startDelayMs={placement.startDelayMs}
+            startAtMs={index === 0 ? animationStartAtMs : undefined}
             onAnimationTimings={index === 0 ? setRope2AnimationTimings : undefined}
           />
           <Billboard
