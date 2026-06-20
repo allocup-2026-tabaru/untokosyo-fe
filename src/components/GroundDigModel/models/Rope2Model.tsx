@@ -45,7 +45,7 @@ export function Rope2Model({
   animationTimings = null,
   motionWindow = CONFIG.models.rope2.motionWindow ?? DEFAULT_MOTION_WINDOW,
 }: Props) {
-  const { scene } = useGLTF(CONFIG.models.rope2.path) as GLTF;
+  const { scene } = useGLTF(CONFIG.models.rope2.path) as unknown as GLTF;
   const modelRef = useRef<THREE.Object3D | null>(null);
   const targetXRef = useRef(transform.position?.x ?? CONFIG.models.rope2.position.x);
   const phaseStartXRef = useRef(targetXRef.current);
