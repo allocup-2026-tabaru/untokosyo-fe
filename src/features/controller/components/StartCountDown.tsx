@@ -18,10 +18,10 @@ export function StartCountDown({
 
   useEffect(() => {
     // 実行開始
-    setCount(10);
+    setCount(1);
 
-    const timer1 = setTimeout(() => setCount(2), 10000);
-    const timer2 = setTimeout(() => setCount(1), 20000);
+    const timer1 = setTimeout(() => setCount(2), 1000);
+    const timer2 = setTimeout(() => setCount(1), 2000);
     const timer3 = setTimeout(() => {
       setCount(null);
       onStart();
