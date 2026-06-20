@@ -38,18 +38,16 @@ const DEFAULT_MOTION_WINDOW: RelativeMotionWindowConfig = {
   endRatio: 0.85,
 };
 
-const TILT_ANGLE_RAD = -0.1;
 const PIVOT_X_OFFSET = -2.5;
 const PIVOT_Y_OFFSET = -2;
 const DEBUG_AXIS_HALF_LENGTH = 1.25;
-const DEFAULT_TILT_SCALE = 1;
-const DEFAULT_WOBBLE_AMPLITUDE_RAD = 0.01;
-const DEFAULT_WOBBLE_SPEED = 3.5;
+const DEFAULT_VIBRATION_AMPLITUDE_RAD = 0.005;
+const DEFAULT_VIBRATION_INTERVAL_MS = 100;
 
 type KabuRopeRigDebugConfig = {
-  tiltScale?: number;
-  wobbleAmplitudeRad?: number;
-  wobbleSpeed?: number;
+  enableVibration?: boolean;
+  vibrationAmplitudeRad?: number;
+  vibrationIntervalMs?: number;
 };
 
 declare global {
@@ -58,38 +56,37 @@ declare global {
   }
 }
 
-const getTiltScale = () => {
+const getVibrationAmplitudeRad = () => {
   if (typeof window === "undefined") {
-    return DEFAULT_TILT_SCALE;
+    return DEFAULT_VIBRATION_AMPLITUDE_RAD;
   }
 
   const debugConfig = window.__untokosyoKabuRopeRigDebug;
-  const tiltScale = debugConfig?.tiltScale ?? DEFAULT_TILT_SCALE;
+  const vibrationAmplitudeRad =
+    debugConfig?.vibrationAmplitudeRad ?? DEFAULT_VIBRATION_AMPLITUDE_RAD;
 
-  return Math.max(0, tiltScale);
+  return Math.max(0, vibrationAmplitudeRad);
 };
 
-const getWobbleAmplitudeRad = () => {
+const isVibrationEnabled = () => {
   if (typeof window === "undefined") {
-    return DEFAULT_WOBBLE_AMPLITUDE_RAD;
+    return true;
   }
 
   const debugConfig = window.__untokosyoKabuRopeRigDebug;
-  const wobbleAmplitudeRad =
-    debugConfig?.wobbleAmplitudeRad ?? DEFAULT_WOBBLE_AMPLITUDE_RAD;
-
-  return Math.max(0, wobbleAmplitudeRad);
+  return debugConfig?.enableVibration ?? true;
 };
 
-const getWobbleSpeed = () => {
+const getVibrationIntervalMs = () => {
   if (typeof window === "undefined") {
-    return DEFAULT_WOBBLE_SPEED;
+    return DEFAULT_VIBRATION_INTERVAL_MS;
   }
 
   const debugConfig = window.__untokosyoKabuRopeRigDebug;
-  const wobbleSpeed = debugConfig?.wobbleSpeed ?? DEFAULT_WOBBLE_SPEED;
+  const vibrationIntervalMs =
+    debugConfig?.vibrationIntervalMs ?? DEFAULT_VIBRATION_INTERVAL_MS;
 
-  return Math.max(0, wobbleSpeed);
+  return Math.max(16, vibrationIntervalMs);
 };
 
 export function KabuRopeRig({
@@ -110,6 +107,9 @@ export function KabuRopeRig({
   const phaseRef = useRef<"pull" | "pull_out" | null>(null);
   const phaseTotalDurationMsRef = useRef(0);
   const phaseStartAtMsRef = useRef(0);
+  const vibrationCurrentRef = useRef(new THREE.Vector3());
+  const vibrationTargetRef = useRef(new THREE.Vector3());
+  const vibrationNextUpdateAtMsRef = useRef(0);
   const timeoutRef = useRef<number | undefined>(undefined);
 
   const rig = useMemo(() => {
@@ -158,9 +158,11 @@ export function KabuRopeRig({
 
   useEffect(() => {
     if (typeof window !== "undefined" && !window.__untokosyoKabuRopeRigDebug) {
-      // DevTools から `window.__untokosyoKabuRopeRigDebug.tiltScale = 1.5` のように変更する。
+      // DevTools から `window.__untokosyoKabuRopeRigDebug.enableVibration = false` のように変更する。
       window.__untokosyoKabuRopeRigDebug = {
-        tiltScale: DEFAULT_TILT_SCALE,
+        enableVibration: true,
+        vibrationAmplitudeRad: DEFAULT_VIBRATION_AMPLITUDE_RAD,
+        vibrationIntervalMs: DEFAULT_VIBRATION_INTERVAL_MS,
       };
     }
 
@@ -184,12 +186,18 @@ export function KabuRopeRig({
       phaseRef.current = "pull";
       phaseTotalDurationMsRef.current = timings.pullDurationMs;
       phaseStartAtMsRef.current = performance.now();
+      vibrationCurrentRef.current.set(0, 0, 0);
+      vibrationTargetRef.current.set(0, 0, 0);
+      vibrationNextUpdateAtMsRef.current = phaseStartAtMsRef.current;
     };
 
     clearTimer();
     phaseRef.current = null;
     phaseTotalDurationMsRef.current = 0;
     phaseStartAtMsRef.current = 0;
+    vibrationCurrentRef.current.set(0, 0, 0);
+    vibrationTargetRef.current.set(0, 0, 0);
+    vibrationNextUpdateAtMsRef.current = 0;
 
     const initialDelayMs =
       startAtMs !== undefined
@@ -209,17 +217,45 @@ export function KabuRopeRig({
     }
 
     if (!phaseRef.current || phaseTotalDurationMsRef.current <= 0) {
-      current.rotation.z = 0;
+      current.rotation.set(0, 0, 0);
       return;
     }
 
-    const baseRotation = TILT_ANGLE_RAD * getTiltScale();
-    const wobbleAmplitudeRad = getWobbleAmplitudeRad();
-    const wobbleSpeed = getWobbleSpeed();
-    const elapsedSeconds = (performance.now() - phaseStartAtMsRef.current) / 1000;
-    const wobble = Math.sin(elapsedSeconds * Math.PI * 2 * wobbleSpeed) * wobbleAmplitudeRad;
+    if (!isVibrationEnabled()) {
+      current.rotation.set(0, 0, 0);
+      return;
+    }
 
-    current.rotation.z = baseRotation + wobble;
+    const now = performance.now();
+    if (now >= vibrationNextUpdateAtMsRef.current) {
+      vibrationCurrentRef.current.copy(vibrationTargetRef.current);
+
+      const amplitude = getVibrationAmplitudeRad();
+      vibrationTargetRef.current.set(
+        THREE.MathUtils.randFloatSpread(amplitude * 2),
+        THREE.MathUtils.randFloatSpread(amplitude * 2),
+        THREE.MathUtils.randFloatSpread(amplitude * 2)
+      );
+      vibrationNextUpdateAtMsRef.current = now + getVibrationIntervalMs();
+    }
+
+    const intervalMs = getVibrationIntervalMs();
+    const progress = THREE.MathUtils.clamp(
+      (now - (vibrationNextUpdateAtMsRef.current - intervalMs)) / intervalMs,
+      0,
+      1
+    );
+    const eased = progress * progress * (3 - 2 * progress);
+
+    current.rotation.x =
+      vibrationCurrentRef.current.x +
+      (vibrationTargetRef.current.x - vibrationCurrentRef.current.x) * eased;
+    current.rotation.y =
+      vibrationCurrentRef.current.y +
+      (vibrationTargetRef.current.y - vibrationCurrentRef.current.y) * eased;
+    current.rotation.z =
+      vibrationCurrentRef.current.z +
+      (vibrationTargetRef.current.z - vibrationCurrentRef.current.z) * eased;
   });
 
   return <primitive object={rig} />;
