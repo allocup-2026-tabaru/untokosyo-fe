@@ -1,5 +1,30 @@
 const modelBaseUrl = (process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? "");
 
+export type CharacterAnimationConfig = {
+  pullName: string;
+  pullOutName: string;
+  pullSpeed: number;
+  pullOutSpeed: number;
+  pauseAfterPull: number;
+  pauseAfterPullOut: number;
+  fadeDuration: number;
+};
+
+export type RelativeMotionWindowConfig = {
+  startRatio: number;
+  endRatio: number;
+};
+
+export type CharacterModelConfig = {
+  id: string;
+  path: string;
+  position: { x: number; y: number; z: number };
+  rotation: { y: number };
+  scale: number;
+  materialColors: Record<string, string>;
+  animation: CharacterAnimationConfig;
+};
+
 export const CONFIG = {
   seed: 1208,
 
@@ -97,11 +122,62 @@ export const CONFIG = {
     },
     rope2: {
       path: `${modelBaseUrl}/rope2.glb`,
-      position: { x: 3, y: 0.1, z: 0 },
+      position: { x: 2.5, y: 0.1, z: 0 },
       rotation: { y: 0 },
       scale: 1,
+      motionWindow: {
+        startRatio: 0.15,
+        endRatio: 0.85,
+      },
     },
   },
+
+  characterModels: [
+    {
+      id: "dog",
+      path: `${modelBaseUrl}/dog.glb`,
+      position: { x: 5, y: 0.3, z: 0 },
+      rotation: { y: -Math.PI / 2 },
+      scale: 0.5,
+      materialColors: {
+        base_color: "#ffffff",
+        accent_color: "#ff9900",
+        nose_color: "#222222",
+        tail_color: "#aa7744",
+      },
+      animation: {
+        pullName: "pull",
+        pullOutName: "pull_out",
+        pullSpeed: 1.0,
+        pullOutSpeed: 1.0,
+        pauseAfterPull: 0.4,
+        pauseAfterPullOut: 0.6,
+        fadeDuration: 0.15,
+      },
+    },
+    {
+      id: "jiji2",
+      path: `${modelBaseUrl}/jiji2.glb`,
+      position: { x: 5, y: 0.3, z: 0 },
+      rotation: { y: -Math.PI / 2 },
+      scale: 0.5,
+      materialColors: {
+        base_color: "#ffffff",
+        accent_color: "#ff9900",
+        nose_color: "#222222",
+        tail_color: "#aa7744",
+      },
+      animation: {
+        pullName: "pull",
+        pullOutName: "pull_out",
+        pullSpeed: 1.0,
+        pullOutSpeed: 1.0,
+        pauseAfterPull: 0.4,
+        pauseAfterPullOut: 0.6,
+        fadeDuration: 0.15,
+      },
+    },
+  ] as const satisfies readonly CharacterModelConfig[],
 
   dog: {
     path: `${modelBaseUrl}/dog.glb`,

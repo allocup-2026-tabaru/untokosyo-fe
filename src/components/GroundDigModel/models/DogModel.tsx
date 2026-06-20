@@ -5,31 +5,56 @@ import * as THREE from "three";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
-import { CONFIG } from "../config/groundDigModelConfig";
+import {
+  CONFIG,
+  type CharacterModelConfig,
+  type TransformConfig,
+} from "../config/groundDigModelConfig";
 import {
   applyTransform,
   recolorNamedMaterials,
   setupMeshes,
 } from "../utils/groundDigModelUtils";
 
-export function DogModel() {
+type Props = {
+  characterModel?: CharacterModelConfig;
+  transform?: TransformConfig;
+  startDelayMs?: number;
+  startAtMs?: number;
+  onAnimationTimings?: (timings: {
+    pullDurationMs: number;
+    pullOutDurationMs: number;
+  }) => void;
+};
+
+export function DogModel({
+  characterModel = CONFIG.characterModels[0],
+  transform,
+  startDelayMs = 0,
+  startAtMs,
+  onAnimationTimings,
+}: Props) {
   const groupRef = useRef<THREE.Group>(null);
-  const { scene, animations } = useGLTF(CONFIG.dog.path) as unknown as GLTF;
+  const reportedTimingsRef = useRef<{
+    pullDurationMs: number;
+    pullOutDurationMs: number;
+  } | null>(null);
+  const { scene, animations } = useGLTF(characterModel.path) as unknown as GLTF;
   const { actions, mixer } = useAnimations(animations, groupRef);
 
-  const model = useMemo(() => {
+  const clonedModel = useMemo(() => {
     const cloned = SkeletonUtils.clone(scene) as THREE.Group;
-    applyTransform(cloned, CONFIG.dog);
-    recolorNamedMaterials(cloned, CONFIG.dog.materialColors);
+    applyTransform(cloned, transform ?? characterModel);
+    recolorNamedMaterials(cloned, characterModel.materialColors);
     setupMeshes(cloned, {
       castShadow: true,
       receiveShadow: true,
     });
     return cloned;
-  }, [scene]);
+  }, [scene, transform, characterModel]);
 
   useEffect(() => {
-    const settings = CONFIG.dog.animation;
+    const settings = characterModel.animation;
     const pullAction = actions[settings.pullName];
     const pullOutAction = actions[settings.pullOutName];
 
@@ -43,6 +68,24 @@ export function DogModel() {
     pullOutAction.clampWhenFinished = true;
     pullAction.timeScale = settings.pullSpeed;
     pullOutAction.timeScale = settings.pullOutSpeed;
+
+    const nextTimings = {
+      pullDurationMs:
+        (pullAction.getClip().duration / Math.max(settings.pullSpeed, 0.01)) * 1000,
+      pullOutDurationMs:
+        (pullOutAction.getClip().duration / Math.max(settings.pullOutSpeed, 0.01)) * 1000,
+    };
+
+    const previousTimings = reportedTimingsRef.current;
+    const hasChanged =
+      !previousTimings ||
+      previousTimings.pullDurationMs !== nextTimings.pullDurationMs ||
+      previousTimings.pullOutDurationMs !== nextTimings.pullOutDurationMs;
+
+    if (hasChanged) {
+      reportedTimingsRef.current = nextTimings;
+      onAnimationTimings?.(nextTimings);
+    }
 
     let currentAction: THREE.AnimationAction | null = null;
     let shouldPlayPull = true;
@@ -73,7 +116,11 @@ export function DogModel() {
     };
 
     mixer.addEventListener("finished", onFinished);
-    playNext();
+    const initialDelayMs =
+      startAtMs !== undefined
+        ? Math.max(0, startAtMs - performance.now())
+        : startDelayMs;
+    timeoutId = window.setTimeout(playNext, initialDelayMs);
 
     return () => {
       mixer.removeEventListener("finished", onFinished);
@@ -82,13 +129,22 @@ export function DogModel() {
       }
       mixer.stopAllAction();
     };
-  }, [actions, mixer]);
+  }, [
+    actions,
+    characterModel.animation,
+    mixer,
+    onAnimationTimings,
+    startAtMs,
+    startDelayMs,
+  ]);
 
   return (
     <group ref={groupRef}>
-      <primitive object={model} />
+      <primitive object={clonedModel} />
     </group>
   );
 }
 
-useGLTF.preload(CONFIG.dog.path);
+for (const characterModel of CONFIG.characterModels) {
+  useGLTF.preload(characterModel.path);
+}
