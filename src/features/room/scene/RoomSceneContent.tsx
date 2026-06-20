@@ -17,6 +17,7 @@ import { ROOM_PLACEMENT_CONFIG } from "../config/roomPlacementConfig";
 
 type Props = {
   onReady?: () => void;
+  onKabuEscapeStart?: () => void;
   playerCount?: number;
   playerNames?: string[];
   playerSlipFlags?: boolean[];
@@ -25,6 +26,7 @@ type Props = {
 
 export function RoomSceneContent({
   onReady,
+  onKabuEscapeStart,
   playerCount = 1,
   playerNames = [],
   playerSlipFlags = [],
@@ -87,6 +89,7 @@ export function RoomSceneContent({
       <KabuRopeRig
         animation={activeCharacterPlacement?.characterModel.animation}
         animationTimings={rope2AnimationTimings}
+        onKabuEscapeStart={onKabuEscapeStart}
         startDelayMs={activeCharacterPlacement?.startDelayMs ?? 0}
         startAtMs={animationStartAtMs}
         motionWindow={CONFIG.models.rope2.motionWindow}

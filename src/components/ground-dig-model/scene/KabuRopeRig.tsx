@@ -23,6 +23,7 @@ type Props = {
     pullDurationMs: number;
     pullOutDurationMs: number;
   } | null;
+  onKabuEscapeStart?: () => void;
   motionWindow?: RelativeMotionWindowConfig;
   startDelayMs?: number;
   startAtMs?: number;
@@ -162,6 +163,7 @@ const getRopeEscapeDurationMs = () => {
 export function KabuRopeRig({
   animation = CONFIG.characterModels[0].animation,
   animationTimings = null,
+  onKabuEscapeStart,
   motionWindow = CONFIG.models.rope2.motionWindow ?? DEFAULT_MOTION_WINDOW,
   startDelayMs = 0,
   startAtMs,
@@ -182,6 +184,7 @@ export function KabuRopeRig({
   const ropeEscapeStartAtMsRef = useRef<number | null>(null);
   const kabuEscapeStartPositionRef = useRef(new THREE.Vector3());
   const ropeEscapeStartPositionRef = useRef(new THREE.Vector3());
+  const hasNotifiedKabuEscapeStartRef = useRef(false);
   const phaseRef = useRef<"pull" | "pull_out" | null>(null);
   const phaseTotalDurationMsRef = useRef(0);
   const phaseStartAtMsRef = useRef(0);
@@ -328,10 +331,15 @@ export function KabuRopeRig({
         kabu.position.copy(kabuBasePositionRef.current);
         kabuEscapeStartAtMsRef.current = null;
         kabuEscapeStartPositionRef.current.copy(kabuBasePositionRef.current);
+        hasNotifiedKabuEscapeStartRef.current = false;
       } else {
         if (kabuEscapeStartAtMsRef.current === null) {
           kabuEscapeStartAtMsRef.current = now;
           kabuEscapeStartPositionRef.current.copy(kabu.position);
+          if (!hasNotifiedKabuEscapeStartRef.current) {
+            hasNotifiedKabuEscapeStartRef.current = true;
+            onKabuEscapeStart?.();
+          }
         }
 
         const escapeDurationMs = getKabuEscapeDurationMs();
