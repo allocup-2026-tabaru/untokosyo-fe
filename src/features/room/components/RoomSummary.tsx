@@ -5,7 +5,7 @@ type Props = {
 
 export function RoomSummary({ roomId, participantCount }: Props) {
   return (
-    <section className="space-y-5 rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.22)]">
+    <section className="space-y-5 rounded-[1.75rem] border border-white/10 bg-white/4 p-5 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
       <div className="space-y-2">
         <p className="text-sm font-medium tracking-[0.24em] text-white/60 uppercase">
           Room
@@ -20,7 +20,7 @@ export function RoomSummary({ roomId, participantCount }: Props) {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-[1.25rem] bg-black/25 px-4 py-4 ring-1 ring-white/8">
+        <div className="rounded-[1.25rem] bg-black/18 px-4 py-4 ring-1 ring-white/8">
           <p className="text-xs font-medium tracking-[0.18em] text-white/55 uppercase">
             Room ID
           </p>
@@ -28,7 +28,7 @@ export function RoomSummary({ roomId, participantCount }: Props) {
             {roomId}
           </p>
         </div>
-        <div className="rounded-[1.25rem] bg-black/25 px-4 py-4 ring-1 ring-white/8">
+        <div className="rounded-[1.25rem] bg-black/18 px-4 py-4 ring-1 ring-white/8">
           <p className="text-xs font-medium tracking-[0.18em] text-white/55 uppercase">
             Current Players
           </p>
