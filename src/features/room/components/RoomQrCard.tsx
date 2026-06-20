@@ -15,11 +15,11 @@ const qrPattern = [
 export function RoomQrCard({ className = "" }: Props) {
   return (
     <section
-      className={`inline-flex w-fit flex-col rounded-[1rem] border border-white/10 bg-white/[0.03] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.14)] sm:p-5 ${className}`}
+      className={`inline-flex w-fit flex-col rounded-[1rem] border border-white/10 bg-white/[0.03] p-2 shadow-[0_16px_40px_rgba(0,0,0,0.14)] sm:p-3 ${className}`}
     >
       <div className="grid place-items-center">
-        <div className="grid h-44 w-44 place-items-center rounded-[1rem] bg-black/[0.14] p-3 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] sm:h-48 sm:w-48">
-          <div className="grid h-full w-full grid-cols-7 gap-[2px] bg-white/[0.03] p-2">
+        <div className="grid h-[28rem] w-[28rem] place-items-center rounded-[1rem] bg-black/[0.14] p-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] sm:h-[34rem] sm:w-[34rem]">
+          <div className="grid h-full w-full grid-cols-7 gap-[4px] bg-white/[0.03] p-4">
             {qrPattern.flatMap((row, rowIndex) =>
               row.split("").map((cell, cellIndex) => (
                 <span
