@@ -38,10 +38,56 @@ const DEFAULT_MOTION_WINDOW: RelativeMotionWindowConfig = {
   endRatio: 0.85,
 };
 
-const TILT_ANGLE_RAD = -0.1;
 const PIVOT_X_OFFSET = -2.5;
 const PIVOT_Y_OFFSET = -2;
 const DEBUG_AXIS_HALF_LENGTH = 1.25;
+const DEFAULT_VIBRATION_AMPLITUDE_RAD = 0.005;
+const DEFAULT_VIBRATION_INTERVAL_MS = 100;
+
+type KabuRopeRigDebugConfig = {
+  enableVibration?: boolean;
+  vibrationAmplitudeRad?: number;
+  vibrationIntervalMs?: number;
+};
+
+declare global {
+  interface Window {
+    __untokosyoKabuRopeRigDebug?: KabuRopeRigDebugConfig;
+  }
+}
+
+const getVibrationAmplitudeRad = () => {
+  if (typeof window === "undefined") {
+    return DEFAULT_VIBRATION_AMPLITUDE_RAD;
+  }
+
+  const debugConfig = window.__untokosyoKabuRopeRigDebug;
+  const vibrationAmplitudeRad =
+    debugConfig?.vibrationAmplitudeRad ?? DEFAULT_VIBRATION_AMPLITUDE_RAD;
+
+  return Math.max(0, vibrationAmplitudeRad);
+};
+
+const isVibrationEnabled = () => {
+  if (typeof window === "undefined") {
+    return true;
+  }
+
+  const debugConfig = window.__untokosyoKabuRopeRigDebug;
+  return debugConfig?.enableVibration ?? true;
+};
+
+const getVibrationIntervalMs = () => {
+  if (typeof window === "undefined") {
+    return DEFAULT_VIBRATION_INTERVAL_MS;
+  }
+
+  const debugConfig = window.__untokosyoKabuRopeRigDebug;
+  const vibrationIntervalMs =
+    debugConfig?.vibrationIntervalMs ?? DEFAULT_VIBRATION_INTERVAL_MS;
+
+  return Math.max(16, vibrationIntervalMs);
+};
 
 export function KabuRopeRig({
   animation = CONFIG.characterModels[0].animation,
@@ -59,12 +105,11 @@ export function KabuRopeRig({
   const { scene: ropeScene } = useGLTF(CONFIG.models.rope.path) as unknown as GLTF;
   const rigRef = useRef<THREE.Group | null>(null);
   const phaseRef = useRef<"pull" | "pull_out" | null>(null);
-  const phaseStartTimeRef = useRef(0);
   const phaseTotalDurationMsRef = useRef(0);
-  const phaseMotionStartMsRef = useRef(0);
-  const phaseMotionEndMsRef = useRef(0);
-  const phaseStartRotationRef = useRef(0);
-  const targetRotationRef = useRef(0);
+  const phaseStartAtMsRef = useRef(0);
+  const vibrationCurrentRef = useRef(new THREE.Vector3());
+  const vibrationTargetRef = useRef(new THREE.Vector3());
+  const vibrationNextUpdateAtMsRef = useRef(0);
   const timeoutRef = useRef<number | undefined>(undefined);
 
   const rig = useMemo(() => {
@@ -112,6 +157,15 @@ export function KabuRopeRig({
   }, [kabuMeshOptions, kabuScene, kabuTransform, ropeMeshOptions, ropeScene, ropeTransform, showDebugAxis]);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && !window.__untokosyoKabuRopeRigDebug) {
+      // DevTools から `window.__untokosyoKabuRopeRigDebug.enableVibration = false` のように変更する。
+      window.__untokosyoKabuRopeRigDebug = {
+        enableVibration: true,
+        vibrationAmplitudeRad: DEFAULT_VIBRATION_AMPLITUDE_RAD,
+        vibrationIntervalMs: DEFAULT_VIBRATION_INTERVAL_MS,
+      };
+    }
+
     rigRef.current = rig;
   }, [rig]);
 
@@ -123,54 +177,34 @@ export function KabuRopeRig({
       }
     };
 
-    const schedulePhase = (phase: "pull" | "pull_out") => {
+    const schedulePull = () => {
       const timings = animationTimings;
       if (!timings) {
         return;
       }
 
-      const startRatio = THREE.MathUtils.clamp(motionWindow.startRatio, 0, 1);
-      const endRatio = THREE.MathUtils.clamp(motionWindow.endRatio, 0, 1);
-      const normalizedStartRatio = Math.min(startRatio, endRatio);
-      const normalizedEndRatio = Math.max(startRatio, endRatio);
-
-      const totalDurationMs =
-        phase === "pull" ? timings.pullDurationMs : timings.pullOutDurationMs;
-
-      phaseRef.current = phase;
-      phaseStartRotationRef.current = rigRef.current?.rotation.z ?? 0;
-      phaseStartTimeRef.current = performance.now();
-      phaseTotalDurationMsRef.current = totalDurationMs;
-      phaseMotionStartMsRef.current = totalDurationMs * normalizedStartRatio;
-      phaseMotionEndMsRef.current = totalDurationMs * normalizedEndRatio;
-      targetRotationRef.current = phase === "pull" ? TILT_ANGLE_RAD : 0;
-
-      const pauseMs =
-        phase === "pull"
-          ? animation.pauseAfterPull * 1000
-          : animation.pauseAfterPullOut * 1000;
-      const nextPhase: "pull" | "pull_out" = phase === "pull" ? "pull_out" : "pull";
-
-      timeoutRef.current = window.setTimeout(() => {
-        schedulePhase(nextPhase);
-      }, pauseMs + totalDurationMs);
+      phaseRef.current = "pull";
+      phaseTotalDurationMsRef.current = timings.pullDurationMs;
+      phaseStartAtMsRef.current = performance.now();
+      vibrationCurrentRef.current.set(0, 0, 0);
+      vibrationTargetRef.current.set(0, 0, 0);
+      vibrationNextUpdateAtMsRef.current = phaseStartAtMsRef.current;
     };
 
     clearTimer();
     phaseRef.current = null;
-    phaseStartRotationRef.current = rigRef.current?.rotation.z ?? 0;
-    phaseStartTimeRef.current = 0;
     phaseTotalDurationMsRef.current = 0;
-    phaseMotionStartMsRef.current = 0;
-    phaseMotionEndMsRef.current = 0;
-    targetRotationRef.current = 0;
+    phaseStartAtMsRef.current = 0;
+    vibrationCurrentRef.current.set(0, 0, 0);
+    vibrationTargetRef.current.set(0, 0, 0);
+    vibrationNextUpdateAtMsRef.current = 0;
 
     const initialDelayMs =
       startAtMs !== undefined
         ? Math.max(0, startAtMs - performance.now())
         : startDelayMs;
     timeoutRef.current = window.setTimeout(() => {
-      schedulePhase("pull");
+      schedulePull();
     }, initialDelayMs);
 
     return clearTimer;
@@ -183,37 +217,45 @@ export function KabuRopeRig({
     }
 
     if (!phaseRef.current || phaseTotalDurationMsRef.current <= 0) {
-      current.rotation.z = targetRotationRef.current;
+      current.rotation.set(0, 0, 0);
       return;
     }
 
-    const elapsedMs = performance.now() - phaseStartTimeRef.current;
-
-    if (elapsedMs <= phaseMotionStartMsRef.current) {
-      current.rotation.z = phaseStartRotationRef.current;
+    if (!isVibrationEnabled()) {
+      current.rotation.set(0, 0, 0);
       return;
     }
 
-    if (elapsedMs >= phaseMotionEndMsRef.current) {
-      current.rotation.z = targetRotationRef.current;
-      return;
+    const now = performance.now();
+    if (now >= vibrationNextUpdateAtMsRef.current) {
+      vibrationCurrentRef.current.copy(vibrationTargetRef.current);
+
+      const amplitude = getVibrationAmplitudeRad();
+      vibrationTargetRef.current.set(
+        THREE.MathUtils.randFloatSpread(amplitude * 2),
+        THREE.MathUtils.randFloatSpread(amplitude * 2),
+        THREE.MathUtils.randFloatSpread(amplitude * 2)
+      );
+      vibrationNextUpdateAtMsRef.current = now + getVibrationIntervalMs();
     }
 
-    const motionDurationMs = Math.max(
-      phaseMotionEndMsRef.current - phaseMotionStartMsRef.current,
-      1
-    );
+    const intervalMs = getVibrationIntervalMs();
     const progress = THREE.MathUtils.clamp(
-      (elapsedMs - phaseMotionStartMsRef.current) / motionDurationMs,
+      (now - (vibrationNextUpdateAtMsRef.current - intervalMs)) / intervalMs,
       0,
       1
     );
+    const eased = progress * progress * (3 - 2 * progress);
 
-    current.rotation.z = THREE.MathUtils.lerp(
-      phaseStartRotationRef.current,
-      targetRotationRef.current,
-      progress
-    );
+    current.rotation.x =
+      vibrationCurrentRef.current.x +
+      (vibrationTargetRef.current.x - vibrationCurrentRef.current.x) * eased;
+    current.rotation.y =
+      vibrationCurrentRef.current.y +
+      (vibrationTargetRef.current.y - vibrationCurrentRef.current.y) * eased;
+    current.rotation.z =
+      vibrationCurrentRef.current.z +
+      (vibrationTargetRef.current.z - vibrationCurrentRef.current.z) * eased;
   });
 
   return <primitive object={rig} />;
