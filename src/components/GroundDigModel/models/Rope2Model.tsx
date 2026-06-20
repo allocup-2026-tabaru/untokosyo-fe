@@ -9,6 +9,7 @@ import {
   CONFIG,
   type CharacterAnimationConfig,
   type MeshOptions,
+  type RelativeMotionWindowConfig,
   type TransformConfig,
 } from "../config/groundDigModelConfig";
 import {
@@ -25,9 +26,14 @@ type Props = {
     pullDurationMs: number;
     pullOutDurationMs: number;
   } | null;
+  motionWindow?: RelativeMotionWindowConfig;
 };
 
 const ROPE2_SHIFT_X = 0.18;
+const DEFAULT_MOTION_WINDOW: RelativeMotionWindowConfig = {
+  startRatio: 0,
+  endRatio: 1,
+};
 
 export function Rope2Model({
   transform,
@@ -35,13 +41,16 @@ export function Rope2Model({
   animation = CONFIG.characterModels[0].animation,
   startDelayMs = 0,
   animationTimings = null,
+  motionWindow = CONFIG.models.rope2.motionWindow ?? DEFAULT_MOTION_WINDOW,
 }: Props) {
   const { scene } = useGLTF(CONFIG.models.rope2.path) as GLTF;
   const modelRef = useRef<THREE.Object3D | null>(null);
   const targetXRef = useRef(transform.position?.x ?? CONFIG.models.rope2.position.x);
   const phaseStartXRef = useRef(targetXRef.current);
   const phaseStartTimeRef = useRef(0);
-  const phaseDurationMsRef = useRef(0);
+  const phaseTotalDurationMsRef = useRef(0);
+  const phaseMotionStartMsRef = useRef(0);
+  const phaseMotionEndMsRef = useRef(0);
   const phaseRef = useRef<"pull" | "pull_out" | null>(null);
   const timeoutRef = useRef<number | undefined>(undefined);
 
@@ -73,11 +82,18 @@ export function Rope2Model({
         return;
       }
 
+      const windowStartRatio = THREE.MathUtils.clamp(motionWindow.startRatio, 0, 1);
+      const windowEndRatio = THREE.MathUtils.clamp(motionWindow.endRatio, 0, 1);
+      const normalizedStartRatio = Math.min(windowStartRatio, windowEndRatio);
+      const normalizedEndRatio = Math.max(windowStartRatio, windowEndRatio);
+
       phaseRef.current = phase;
       phaseStartXRef.current = modelRef.current?.position.x ?? baseX;
       phaseStartTimeRef.current = performance.now();
-      phaseDurationMsRef.current =
+      phaseTotalDurationMsRef.current =
         phase === "pull" ? timings.pullDurationMs : timings.pullOutDurationMs;
+      phaseMotionStartMsRef.current = phaseTotalDurationMsRef.current * normalizedStartRatio;
+      phaseMotionEndMsRef.current = phaseTotalDurationMsRef.current * normalizedEndRatio;
       targetXRef.current = phase === "pull" ? pullX : pullOutX;
 
       const pauseMs =
@@ -88,7 +104,7 @@ export function Rope2Model({
 
       timeoutRef.current = window.setTimeout(() => {
         schedulePhase(nextPhase);
-      }, pauseMs + phaseDurationMsRef.current);
+      }, pauseMs + phaseTotalDurationMsRef.current);
     };
 
     clearTimer();
@@ -96,7 +112,9 @@ export function Rope2Model({
     phaseRef.current = null;
     phaseStartXRef.current = baseX;
     phaseStartTimeRef.current = 0;
-    phaseDurationMsRef.current = 0;
+    phaseTotalDurationMsRef.current = 0;
+    phaseMotionStartMsRef.current = 0;
+    phaseMotionEndMsRef.current = 0;
     timeoutRef.current = window.setTimeout(() => {
       schedulePhase("pull");
     }, startDelayMs);
@@ -110,14 +128,36 @@ export function Rope2Model({
       return;
     }
 
-    if (!phaseRef.current || phaseDurationMsRef.current <= 0) {
+    if (!phaseRef.current || phaseTotalDurationMsRef.current <= 0) {
       current.position.x = targetXRef.current;
       return;
     }
 
     const elapsedMs = performance.now() - phaseStartTimeRef.current;
-    const progress = THREE.MathUtils.clamp(elapsedMs / phaseDurationMsRef.current, 0, 1);
-    current.position.x = THREE.MathUtils.lerp(phaseStartXRef.current, targetXRef.current, progress);
+    if (elapsedMs <= phaseMotionStartMsRef.current) {
+      current.position.x = phaseStartXRef.current;
+      return;
+    }
+
+    if (elapsedMs >= phaseMotionEndMsRef.current) {
+      current.position.x = targetXRef.current;
+      return;
+    }
+
+    const motionDurationMs = Math.max(
+      phaseMotionEndMsRef.current - phaseMotionStartMsRef.current,
+      1
+    );
+    const progress = THREE.MathUtils.clamp(
+      (elapsedMs - phaseMotionStartMsRef.current) / motionDurationMs,
+      0,
+      1
+    );
+    current.position.x = THREE.MathUtils.lerp(
+      phaseStartXRef.current,
+      targetXRef.current,
+      progress
+    );
   });
 
   return <primitive object={model} />;

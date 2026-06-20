@@ -10,6 +10,11 @@ export type CharacterAnimationConfig = {
   fadeDuration: number;
 };
 
+export type RelativeMotionWindowConfig = {
+  startRatio: number;
+  endRatio: number;
+};
+
 export type CharacterModelConfig = {
   id: string;
   path: string;
@@ -120,6 +125,10 @@ export const CONFIG = {
       position: { x: 2.5, y: 0.1, z: 0 },
       rotation: { y: 0 },
       scale: 1,
+      motionWindow: {
+        startRatio: 0.15,
+        endRatio: 0.85,
+      },
     },
   },
 
