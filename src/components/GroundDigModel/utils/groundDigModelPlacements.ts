@@ -35,6 +35,7 @@ export const getDogPlacements = (playerCount: number): DogPlacement[] => {
   const baseRotationY = baseCharacterModel.rotation.y ?? 0;
   const spacing = safeCount === 1 ? 0 : Math.min(1.0, 2.6 / (safeCount - 1));
   const centerOffset = (safeCount - 1) / 2;
+  const loadHue = randomRange(createRandomSource(), 0, 360);
 
   return Array.from({ length: safeCount }, (_, index) => {
     const offset = index - centerOffset;
@@ -42,8 +43,8 @@ export const getDogPlacements = (playerCount: number): DogPlacement[] => {
     const characterModel = pick(rng, CONFIG.characterModels);
     const materialColors =
       characterModel.id === "jiji2"
-        ? createJiji2MaterialColors()
-        : createDogMaterialColors();
+        ? createJiji2MaterialColors(loadHue + 180, index)
+        : createDogMaterialColors(loadHue, index);
 
     return {
       characterModel,

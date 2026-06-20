@@ -8,6 +8,8 @@ const toHex = (value: number) => {
     .padStart(2, "0");
 };
 
+const GOLDEN_ANGLE = 137.50776405003785;
+
 const hslToHex = (hue: number, saturation: number, lightness: number) => {
   const h = ((hue % 360) + 360) % 360;
   const s = clamp(saturation, 0, 100) / 100;
@@ -42,12 +44,22 @@ const randomRange = (rng: () => number, min: number, max: number) => {
   return min + rng() * (max - min);
 };
 
-const pick = <T,>(rng: () => number, items: readonly T[]) => {
-  return items[Math.floor(rng() * items.length)];
+const wrapHue = (hue: number) => {
+  return ((hue % 360) + 360) % 360;
 };
 
-const mixToward = (base: number, target: number, amount: number) => {
-  return base + (target - base) * amount;
+const warmifyHue = (hue: number) => {
+  const wrapped = wrapHue(hue);
+
+  if (wrapped < 120) {
+    return wrapped * 0.45;
+  }
+
+  if (wrapped < 240) {
+    return 20 + (wrapped - 120) * 0.5;
+  }
+
+  return 300 + (wrapped - 240) * 0.46;
 };
 
 export const createRandomSource = () => {
@@ -65,75 +77,45 @@ export const createRandomSource = () => {
   };
 };
 
-const createDogPalette = () => {
+const createVividColor = (
+  hue: number,
+  saturationRange: [number, number],
+  lightnessRange: [number, number]
+) => {
   const rng = createRandomSource();
-  const baseHue = randomRange(rng, 18, 38);
-  const baseSaturation = randomRange(rng, 24, 42);
-  const baseLightness = randomRange(rng, 40, 61);
 
-  const accentHue = baseHue + randomRange(rng, -6, 6);
-  const accentSaturation = clamp(baseSaturation + randomRange(rng, -4, 6), 18, 44);
-  const accentLightness = clamp(baseLightness + randomRange(rng, -10, 10), 30, 66);
+  return hslToHex(
+    warmifyHue(hue + randomRange(rng, -10, 10)),
+    randomRange(rng, saturationRange[0], saturationRange[1]),
+    randomRange(rng, lightnessRange[0], lightnessRange[1])
+  );
+};
 
-  const tailHue = mixToward(accentHue, baseHue, randomRange(rng, 0.15, 0.45));
-  const tailSaturation = clamp(
-    mixToward(accentSaturation, baseSaturation, randomRange(rng, 0.1, 0.45)),
-    16,
-    44
-  );
-  const tailLightness = clamp(
-    mixToward(accentLightness, baseLightness, randomRange(rng, 0.1, 0.4)),
-    28,
-    66
-  );
+const getSpacedHue = (baseHue: number, playerIndex: number, offset: number) => {
+  return wrapHue(baseHue + playerIndex * GOLDEN_ANGLE + offset);
+};
+
+export const createDogMaterialColors = (baseHue: number, playerIndex: number) => {
+  const base = getSpacedHue(baseHue, playerIndex, 12);
+  const accent = getSpacedHue(baseHue, playerIndex, 132);
+  const tail = getSpacedHue(baseHue, playerIndex, 252);
 
   return {
-    base_color: hslToHex(baseHue, baseSaturation, baseLightness),
-    accent_color: hslToHex(accentHue, accentSaturation, accentLightness),
-    nose_color: "#222222",
-    tail_color: hslToHex(tailHue, tailSaturation, tailLightness),
+    base_color: createVividColor(base, [48, 78], [34, 54]),
+    accent_color: createVividColor(accent, [62, 92], [36, 56]),
+    nose_color: "#171717",
+    tail_color: createVividColor(tail, [52, 84], [30, 50]),
   };
 };
 
-const createJiji2Palette = () => {
-  const rng = createRandomSource();
-  const clothAccentSwatches = [
-    "#7b8f8a",
-    "#8a7f73",
-    "#8f7b6a",
-    "#7c8797",
-    "#8b8a66",
-    "#8f6f73",
-  ] as const;
-  const bottomSwatches = [
-    "#6a5b50",
-    "#5d655f",
-    "#6a6d74",
-    "#5c564f",
-    "#72604f",
-    "#5e5b64",
-  ] as const;
-
-  const clothBase = hslToHex(
-    randomRange(rng, 28, 44),
-    randomRange(rng, 8, 18),
-    randomRange(rng, 84, 94)
-  );
-
-  const clothAccent = pick(rng, clothAccentSwatches);
-  const bottoms = pick(rng, bottomSwatches);
+export const createJiji2MaterialColors = (baseHue: number, playerIndex: number) => {
+  const clothBase = getSpacedHue(baseHue, playerIndex, 24);
+  const clothAccent = getSpacedHue(baseHue, playerIndex, 168);
+  const bottoms = getSpacedHue(baseHue, playerIndex, 288);
 
   return {
-    clothBase,
-    cloth_2: clothAccent,
-    bottoms,
+    clothBase: createVividColor(clothBase, [46, 82], [44, 62]),
+    cloth_2: createVividColor(clothAccent, [58, 90], [36, 54]),
+    bottoms: createVividColor(bottoms, [44, 80], [20, 36]),
   };
-};
-
-export const createDogMaterialColors = () => {
-  return createDogPalette();
-};
-
-export const createJiji2MaterialColors = () => {
-  return createJiji2Palette();
 };
