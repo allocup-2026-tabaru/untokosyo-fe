@@ -15,8 +15,11 @@ const qrPattern = [
 export function RoomQrCard({ className = "" }: Props) {
   return (
     <section
-      className={`inline-flex w-fit flex-col rounded-[1rem] border border-white/10 bg-white/[0.03] p-2 shadow-[0_16px_40px_rgba(0,0,0,0.14)] sm:p-3 ${className}`}
+      className={`inline-flex w-fit flex-col items-center rounded-[1rem] border border-white/10 bg-white/[0.03] p-2 shadow-[0_16px_40px_rgba(0,0,0,0.14)] sm:p-3 ${className}`}
     >
+      <p className="mb-3 w-[28rem] whitespace-nowrap text-center text-[1.35rem] font-semibold tracking-[-0.03em] text-white sm:w-[34rem] sm:text-[1.75rem]">
+        QRコードをスマホで読んでゲームに参加
+      </p>
       <div className="grid place-items-center">
         <div className="grid h-[28rem] w-[28rem] place-items-center rounded-[1rem] bg-black/[0.14] p-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] sm:h-[34rem] sm:w-[34rem]">
           <div className="grid h-full w-full grid-cols-7 gap-[4px] bg-white/[0.03] p-4">
