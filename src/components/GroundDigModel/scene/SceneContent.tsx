@@ -28,18 +28,14 @@ export function SceneContent({
   playerLabelHeight = 1.45,
 }: Props) {
   const hasNotifiedReadyRef = useRef(false);
-  const [characterPlacements, setCharacterPlacements] = useState<
-    ReturnType<typeof getDogPlacements>
-  >([]);
   const [rope2AnimationTimings, setRope2AnimationTimings] = useState<{
     pullDurationMs: number;
     pullOutDurationMs: number;
   } | null>(null);
-
-  useEffect(() => {
-    setCharacterPlacements(getDogPlacements(playerCount));
-  }, [playerCount]);
-
+  const characterPlacements = useMemo(
+    () => getDogPlacements(playerCount),
+    [playerCount]
+  );
   const activeCharacterPlacement = characterPlacements[0];
   const animationStartDelayMs = activeCharacterPlacement?.startDelayMs ?? 0;
   const animationStartAtMs = useMemo(
