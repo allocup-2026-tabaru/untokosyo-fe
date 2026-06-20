@@ -42,6 +42,28 @@ const TILT_ANGLE_RAD = -0.1;
 const PIVOT_X_OFFSET = -2.5;
 const PIVOT_Y_OFFSET = -2;
 const DEBUG_AXIS_HALF_LENGTH = 1.25;
+const DEFAULT_TILT_SCALE = 1;
+
+type KabuRopeRigDebugConfig = {
+  tiltScale?: number;
+};
+
+declare global {
+  interface Window {
+    __untokosyoKabuRopeRigDebug?: KabuRopeRigDebugConfig;
+  }
+}
+
+const getTiltScale = () => {
+  if (typeof window === "undefined") {
+    return DEFAULT_TILT_SCALE;
+  }
+
+  const debugConfig = window.__untokosyoKabuRopeRigDebug;
+  const tiltScale = debugConfig?.tiltScale ?? DEFAULT_TILT_SCALE;
+
+  return Math.max(0, tiltScale);
+};
 
 export function KabuRopeRig({
   animation = CONFIG.characterModels[0].animation,
@@ -112,6 +134,13 @@ export function KabuRopeRig({
   }, [kabuMeshOptions, kabuScene, kabuTransform, ropeMeshOptions, ropeScene, ropeTransform, showDebugAxis]);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && !window.__untokosyoKabuRopeRigDebug) {
+      // DevTools から `window.__untokosyoKabuRopeRigDebug.tiltScale = 1.5` のように変更する。
+      window.__untokosyoKabuRopeRigDebug = {
+        tiltScale: DEFAULT_TILT_SCALE,
+      };
+    }
+
     rigRef.current = rig;
   }, [rig]);
 
@@ -143,7 +172,8 @@ export function KabuRopeRig({
       phaseTotalDurationMsRef.current = totalDurationMs;
       phaseMotionStartMsRef.current = totalDurationMs * normalizedStartRatio;
       phaseMotionEndMsRef.current = totalDurationMs * normalizedEndRatio;
-      targetRotationRef.current = phase === "pull" ? TILT_ANGLE_RAD : 0;
+      targetRotationRef.current =
+        phase === "pull" ? TILT_ANGLE_RAD * getTiltScale() : 0;
 
       const pauseMs =
         phase === "pull"
