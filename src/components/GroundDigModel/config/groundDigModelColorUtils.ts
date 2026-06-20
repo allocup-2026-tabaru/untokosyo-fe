@@ -96,15 +96,35 @@ const getSpacedHue = (baseHue: number, playerIndex: number, offset: number) => {
 };
 
 export const createDogMaterialColors = (baseHue: number, playerIndex: number) => {
+  const rng = createRandomSource();
   const base = getSpacedHue(baseHue, playerIndex, 12);
   const accent = getSpacedHue(baseHue, playerIndex, 132);
   const tail = getSpacedHue(baseHue, playerIndex, 252);
+  const baseLightness = randomRange(rng, 32, 52);
+  const accentLightness = baseLightness < 42
+    ? randomRange(rng, 60, 76)
+    : randomRange(rng, 24, 40);
+  const tailLightness = baseLightness < 42
+    ? randomRange(rng, 44, 62)
+    : randomRange(rng, 28, 46);
 
   return {
-    base_color: createVividColor(base, [48, 78], [34, 54]),
-    accent_color: createVividColor(accent, [62, 92], [36, 56]),
+    base_color: hslToHex(
+      warmifyHue(base + randomRange(rng, -10, 10)),
+      randomRange(rng, 42, 72),
+      baseLightness
+    ),
+    accent_color: hslToHex(
+      warmifyHue(accent + randomRange(rng, -10, 10)),
+      randomRange(rng, 48, 84),
+      accentLightness
+    ),
     nose_color: "#171717",
-    tail_color: createVividColor(tail, [52, 84], [30, 50]),
+    tail_color: hslToHex(
+      warmifyHue(tail + randomRange(rng, -10, 10)),
+      randomRange(rng, 38, 70),
+      tailLightness
+    ),
   };
 };
 
