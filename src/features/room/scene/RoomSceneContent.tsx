@@ -21,17 +21,21 @@ import { ROOM_PLACEMENT_CONFIG } from "../config/roomPlacementConfig";
 
 type Props = {
   onReady?: () => void;
+  onKabuEscapeStart?: () => void;
   playerCount?: number;
   playerNames?: string[];
   playerAvatars?: PlayerAvatarInfo[];
+  playerSlipFlags?: boolean[];
   playerLabelHeight?: number;
 };
 
 export function RoomSceneContent({
   onReady,
+  onKabuEscapeStart,
   playerCount = 1,
   playerNames = [],
   playerAvatars,
+  playerSlipFlags = [],
   playerLabelHeight = 1.45,
 }: Props) {
   const hasNotifiedReadyRef = useRef(false);
@@ -58,6 +62,10 @@ export function RoomSceneContent({
         (_, index) => playerNames[index] ?? `player${index + 1}`
       ),
     [characterPlacements, playerNames]
+  );
+  const resolvedPlayerSlipFlags = useMemo(
+    () => characterPlacements.map((_, index) => playerSlipFlags[index] ?? false),
+    [characterPlacements, playerSlipFlags]
   );
 
   useEffect(() => {
@@ -90,6 +98,7 @@ export function RoomSceneContent({
       <KabuRopeRig
         animation={activeCharacterPlacement?.characterModel.animation}
         animationTimings={rope2AnimationTimings}
+        onKabuEscapeStart={onKabuEscapeStart}
         startDelayMs={activeCharacterPlacement?.startDelayMs ?? 0}
         startAtMs={animationStartAtMs}
         motionWindow={CONFIG.models.rope2.motionWindow}
@@ -109,6 +118,7 @@ export function RoomSceneContent({
           key={`${index}-${playerCount}`}
           placement={placement}
           name={resolvedPlayerNames[index]}
+          slipWhenKabuEscapes={resolvedPlayerSlipFlags[index]}
           playerLabelHeight={playerLabelHeight}
           animationStartAtMs={animationStartAtMs}
           onAnimationTimings={index === 0 ? setRope2AnimationTimings : undefined}

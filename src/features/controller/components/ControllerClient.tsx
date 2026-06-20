@@ -5,6 +5,7 @@ import { Suspense, useState } from "react";
 import { ControllerScene } from "@/features/controller/scene/ControllerScene";
 import { PullArrowIndicator } from "./PullArrowIndicator";
 import { NameInputScreen } from "./NameInputScreen";
+import { StartCountDown } from "./StartCountDown";
 
 type Props = {
   roomId: string;
@@ -12,6 +13,7 @@ type Props = {
 
 export function ControllerClient({ roomId }: Props) {
   const [playerName, setPlayerName] = useState<string | null>(null);
+  const gameUIFlag=false;
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
@@ -34,6 +36,13 @@ export function ControllerClient({ roomId }: Props) {
       {playerName === null && (
         <NameInputScreen onStart={setPlayerName} />
       )}
+
+      {/* StartCountDownの挙動を確認するための部分 */}
+      <StartCountDown
+        onStart={() => {
+          console.log("カウントダウン終了！");
+      }}
+      />
     </div>
   );
 }

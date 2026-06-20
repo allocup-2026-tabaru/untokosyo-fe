@@ -7,6 +7,7 @@ import { PlayerNameTag } from "./PlayerNameTag";
 type Props = {
   placement: DogPlacement;
   name: string;
+  slipWhenKabuEscapes?: boolean;
   playerLabelHeight: number;
   animationStartAtMs: number;
   onAnimationTimings?: (timings: {
@@ -19,6 +20,7 @@ type Props = {
 export function CharacterPlacement({
   placement,
   name,
+  slipWhenKabuEscapes = false,
   playerLabelHeight,
   animationStartAtMs,
   onAnimationTimings,
@@ -32,6 +34,7 @@ export function CharacterPlacement({
         transform={placement.transform}
         startDelayMs={placement.startDelayMs}
         startAtMs={isPrimary ? animationStartAtMs : undefined}
+        slipWhenKabuEscapes={slipWhenKabuEscapes}
         onAnimationTimings={onAnimationTimings}
       />
       <PlayerNameTag

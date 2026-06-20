@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RoomScene } from "@/features/room/scene/RoomScene";
 import { useHostWebSocket } from "../hooks/useHostWebSocket";
 import { startGame } from "@/infrastructure/http/roomApi";
 import { RoomModal } from "./RoomModal";
+import { RoomResultModal } from "./RoomResultModal";
 
 type Props = {
   roomId: string;
@@ -40,6 +41,10 @@ export function RoomPage({ roomId }: Props) {
         isVisible={isRoomModalVisible}
         onStart={handleStart}
       />
+      {/* <RoomResultModal
+        participants={mockRoomParticipants}
+        isVisible={isResultModalVisible}
+      /> */}
     </main>
   );
 }

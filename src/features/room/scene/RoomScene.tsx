@@ -15,6 +15,8 @@ type Props = {
   playerNames: string[];
   playerAvatars?: PlayerAvatarInfo[];
   isWaiting?: boolean;
+  playerSlipFlags?: boolean[];
+  onKabuEscapeStart?: () => void;
   playerLabelHeight?: number;
 };
 
@@ -22,6 +24,8 @@ export function RoomScene({
   playerCount,
   playerNames,
   playerAvatars,
+  playerSlipFlags = [],
+  onKabuEscapeStart,
   playerLabelHeight = 2,
 }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -58,9 +62,11 @@ export function RoomScene({
         <Suspense fallback={null}>
           <RoomSceneContent
             onReady={() => setIsLoaded(true)}
+            onKabuEscapeStart={onKabuEscapeStart}
             playerCount={playerCount}
             playerNames={playerNames}
             playerAvatars={playerAvatars}
+            playerSlipFlags={playerSlipFlags}
             playerLabelHeight={playerLabelHeight}
           />
         </Suspense>
