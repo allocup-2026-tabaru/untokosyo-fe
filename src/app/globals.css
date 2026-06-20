@@ -10,6 +10,26 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* パネル */
+  --color-panel-bg: rgba(255, 250, 242, 0.82);
+  --color-panel-border: rgba(255, 255, 255, 0.60);
+
+  /* アクセントカラー */
+  --color-accent-green: #6e9a36;
+  --color-accent-green-dark: #61892f;
+  --color-accent-orange: #d57b2f;
+  --color-accent-orange-dark: #c96e20;
+
+  /* テキスト */
+  --color-text-primary: #233018;
+  --color-text-muted: #617f3a;
+
+  /* ステータスピル（ライトテーマ） */
+  --color-status-ready-bg: #e2f3db;
+  --color-status-ready-text: #2d6b21;
+  --color-status-wait-bg: #efe7d5;
+  --color-status-wait-text: #8d6e2f;
 }
 
 @media (prefers-color-scheme: dark) {

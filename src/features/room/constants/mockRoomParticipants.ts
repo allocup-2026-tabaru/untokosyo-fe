@@ -1,14 +1,6 @@
-export type RoomParticipantStatus = "準備中" | "準備完了";
+import type { Participant } from "@/shared/types/participant";
 
-export type RoomParticipant = {
-  id: string;
-  name: string;
-  characterModel: string;
-  status: RoomParticipantStatus;
-  accentClassName: string;
-};
-
-export const mockRoomParticipants: readonly RoomParticipant[] = [
+export const mockRoomParticipants: readonly Participant[] = [
   {
     id: "host",
     name: "Player 1",

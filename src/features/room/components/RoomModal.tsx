@@ -1,3 +1,4 @@
+import { ModalOverlay } from "@/components/ui/ModalOverlay";
 import { RoomQrCard } from "./RoomQrCard";
 import { StartGameButton } from "./StartGameButton";
 
@@ -9,12 +10,7 @@ type Props = {
 
 export function RoomModal({ roomId, isVisible, onStart }: Props) {
   return (
-    <div
-      className={`absolute inset-0 z-10 transition-opacity duration-300 ${
-        isVisible ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
-      }`}
-      aria-hidden={!isVisible}
-    >
+    <ModalOverlay isVisible={isVisible}>
       <div className="relative flex h-full w-full flex-col gap-4 p-4 sm:p-6 lg:p-8">
         <RoomQrCard
           className="pointer-events-auto w-fit max-w-full rounded-[1rem] border border-white/10 bg-black/[0.28] text-white shadow-[0_24px_64px_rgba(0,0,0,0.22)] backdrop-blur-lg lg:absolute lg:left-6 lg:top-6"
@@ -34,6 +30,6 @@ export function RoomModal({ roomId, isVisible, onStart }: Props) {
           </div>
         </section>
       </div>
-    </div>
+    </ModalOverlay>
   );
 }
