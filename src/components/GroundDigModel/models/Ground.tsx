@@ -12,7 +12,7 @@ import {
 } from "../utils/groundDigModelUtils";
 
 export function Ground() {
-  const { scene } = useGLTF(CONFIG.models.ground.path) as GLTF;
+  const { scene } = useGLTF(CONFIG.models.ground.path) as unknown as GLTF;
   const texture = useMemo(() => createGroundTexture(CONFIG.seed), []);
 
   const model = useMemo(() => {

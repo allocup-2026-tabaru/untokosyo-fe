@@ -39,7 +39,7 @@ export function DogModel({
     pullDurationMs: number;
     pullOutDurationMs: number;
   } | null>(null);
-  const { scene, animations } = useGLTF(characterModel.path) as GLTF;
+  const { scene, animations } = useGLTF(characterModel.path) as unknown as GLTF;
   const { actions, mixer } = useAnimations(animations, groupRef);
 
   const clonedModel = useMemo(() => {

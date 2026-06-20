@@ -51,12 +51,12 @@ export const CONFIG = {
 
   lobbyCameraPresets: {
     start: {
-      position: [-4.5, 3.2, 8.7],
-      target: [-3.5, 0.45, -0.2],
+      position: [-4.5, 3.2, 8.7] as [number, number, number],
+      target: [-3.5, 0.45, -0.2] as [number, number, number],
     },
     room: {
-      position: [5.3, 3.3, 7.4],
-      target: [4, 0.45, -0.2],
+      position: [5.3, 3.3, 7.4] as [number, number, number],
+      target: [4, 0.45, -0.2] as [number, number, number],
     },
   },
 
