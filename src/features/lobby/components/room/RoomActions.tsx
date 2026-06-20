@@ -17,7 +17,7 @@ export function RoomActions({ roomId }: Props) {
         href={`/${roomId}`}
         className="inline-flex items-center justify-center rounded-full bg-[#d57b2f] px-6 py-4 text-base font-semibold text-white shadow-[0_12px_30px_rgba(182,94,28,0.28)] transition hover:bg-[#c96e20]"
       >
-        開始
+        作成
       </Link>
     </div>
   );

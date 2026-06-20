@@ -4,7 +4,6 @@ import { LobbyPageShell } from "../layout/LobbyPageShell";
 import { LobbyPanel } from "../layout/LobbyPanel";
 import { RoomActions } from "./RoomActions";
 import { RoomHeader } from "./RoomHeader";
-import { RoomParticipantList } from "./RoomParticipantList";
 import { RoomSummaryCard } from "./RoomSummaryCard";
 
 export function RoomLobbyView() {
@@ -14,7 +13,6 @@ export function RoomLobbyView() {
         <div className="space-y-6">
           <RoomHeader />
           <RoomSummaryCard participantCount={mockParticipants.length} roomId={LOBBY_ROOM_ID} />
-          <RoomParticipantList participants={mockParticipants} />
           <RoomActions roomId={LOBBY_ROOM_ID} />
         </div>
       </LobbyPanel>
