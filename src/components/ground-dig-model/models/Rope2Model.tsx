@@ -31,6 +31,8 @@ type Props = {
 };
 
 const ROPE2_SHIFT_X = 0.18;
+const DEFAULT_ROPE2_ESCAPE_DISTANCE_X = 400;
+const DEFAULT_ROPE2_ESCAPE_DURATION_MS = 450;
 const DEFAULT_MOTION_WINDOW: RelativeMotionWindowConfig = {
   startRatio: 0,
   endRatio: 1,
@@ -55,6 +57,8 @@ export function Rope2Model({
   const phaseMotionEndMsRef = useRef(0);
   const phaseRef = useRef<"pull" | "pull_out" | null>(null);
   const timeoutRef = useRef<number | undefined>(undefined);
+  const rope2EscapeStartAtMsRef = useRef<number | null>(null);
+  const rope2EscapeStartXRef = useRef(targetXRef.current);
 
   const model = useMemo(() => {
     const cloned = prepareStaticObject(scene, meshOptions);
@@ -111,6 +115,7 @@ export function Rope2Model({
 
     clearTimer();
     targetXRef.current = baseX;
+    rope2EscapeStartXRef.current = baseX;
     phaseRef.current = null;
     phaseStartXRef.current = baseX;
     phaseStartTimeRef.current = 0;
@@ -130,36 +135,58 @@ export function Rope2Model({
       return;
     }
 
+    const now = performance.now();
+
     if (!phaseRef.current || phaseTotalDurationMsRef.current <= 0) {
       current.position.x = targetXRef.current;
+    } else {
+      const elapsedMs = performance.now() - phaseStartTimeRef.current;
+      if (elapsedMs <= phaseMotionStartMsRef.current) {
+        current.position.x = phaseStartXRef.current;
+      } else if (elapsedMs >= phaseMotionEndMsRef.current) {
+        current.position.x = targetXRef.current;
+      } else {
+        const motionDurationMs = Math.max(
+          phaseMotionEndMsRef.current - phaseMotionStartMsRef.current,
+          1
+        );
+        const progress = THREE.MathUtils.clamp(
+          (elapsedMs - phaseMotionStartMsRef.current) / motionDurationMs,
+          0,
+          1
+        );
+        current.position.x = THREE.MathUtils.lerp(
+          phaseStartXRef.current,
+          targetXRef.current,
+          progress
+        );
+      }
+    }
+
+    const debugConfig = window.__untokosyoKabuRopeRigDebug;
+    if (!debugConfig?.kabuEscape) {
+      rope2EscapeStartAtMsRef.current = null;
+      rope2EscapeStartXRef.current = current.position.x;
       return;
     }
 
-    const elapsedMs = performance.now() - phaseStartTimeRef.current;
-    if (elapsedMs <= phaseMotionStartMsRef.current) {
-      current.position.x = phaseStartXRef.current;
-      return;
+    if (rope2EscapeStartAtMsRef.current === null) {
+      rope2EscapeStartAtMsRef.current = now;
+      rope2EscapeStartXRef.current = current.position.x;
     }
 
-    if (elapsedMs >= phaseMotionEndMsRef.current) {
-      current.position.x = targetXRef.current;
-      return;
-    }
-
-    const motionDurationMs = Math.max(
-      phaseMotionEndMsRef.current - phaseMotionStartMsRef.current,
-      1
+    const escapeDurationMs = Math.max(
+      16,
+      debugConfig.rope2EscapeDurationMs ?? DEFAULT_ROPE2_ESCAPE_DURATION_MS
     );
-    const progress = THREE.MathUtils.clamp(
-      (elapsedMs - phaseMotionStartMsRef.current) / motionDurationMs,
+    const escapeDistanceX = Math.max(
       0,
-      1
+      debugConfig.rope2EscapeDistanceX ?? DEFAULT_ROPE2_ESCAPE_DISTANCE_X
     );
-    current.position.x = THREE.MathUtils.lerp(
-      phaseStartXRef.current,
-      targetXRef.current,
-      progress
-    );
+    const escapeElapsedMs = now - rope2EscapeStartAtMsRef.current;
+    const escapeProgress = THREE.MathUtils.clamp(escapeElapsedMs / escapeDurationMs, 0, 1);
+    const escapeEased = 1 - Math.pow(1 - escapeProgress, 3);
+    current.position.x = rope2EscapeStartXRef.current + escapeDistanceX * escapeEased;
   });
 
   return <primitive object={model} />;
