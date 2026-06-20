@@ -8,6 +8,7 @@ import { Ground } from "@/components/ground-dig-model/models/Ground";
 import { StaticModel } from "@/components/ground-dig-model/models/StaticModel";
 import { SceneLights } from "@/components/ground-dig-model/scene/SceneLights";
 import { SkyDome } from "@/components/ground-dig-model/scene/SkyDome";
+import { StartLobbyLogo } from "./StartLobbyLogo";
 
 export type LobbySceneVariant = "start" | "room";
 
@@ -81,6 +82,7 @@ export function LobbySceneContent({ variant, onReady }: Props) {
         transform={CONFIG.models.kabu}
         meshOptions={{ castShadow: true, receiveShadow: true }}
       />
+      <StartLobbyLogo />
     </>
   );
 }

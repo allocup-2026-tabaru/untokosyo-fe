@@ -2,21 +2,15 @@ import Image from "next/image";
 
 export function StartLobbyHero() {
   return (
-    <div className="space-y-4">
-      <p className="text-sm font-medium tracking-[0.24em] text-[#617f3a] uppercase">
-        Start Screen
-      </p>
+    <div className="flex justify-start">
       <Image
-        src="/title.png"
+        src="/title_cutout.png"
         alt="Untokosyo"
-        width={640}
-        height={320}
+        width={1024}
+        height={576}
         priority
-        className="h-auto w-full"
+        className="h-auto w-full max-w-[min(92vw,42rem)] select-none drop-shadow-[0_22px_34px_rgba(65,82,43,0.18)] sm:max-w-[44rem] md:max-w-[48rem]"
       />
-      <p className="max-w-md text-sm leading-7 text-[#54614a] sm:text-base">
-        かぶを引き抜く準備ができたら、ルームを作成して参加者を集めます。
-      </p>
     </div>
   );
 }
