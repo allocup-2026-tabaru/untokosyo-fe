@@ -3,34 +3,13 @@
 import { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { CONFIG } from "./config/groundDigModelConfig";
-import { LoadingOverlay } from "./scene/LoadingOverlay";
-import { SceneContent } from "./scene/SceneContent";
-import "./GroundDigModel.css";
+import { CONFIG } from "../config/controllerSceneConfig";
+import { LoadingOverlay } from "@/components/GroundDigModel/scene/LoadingOverlay";
+import { ControllerSceneContent } from "./ControllerSceneContent";
+import "@/components/GroundDigModel/GroundDigModel.css";
 
-type Props = {
-  isWaiting?: boolean;
-  playerCount?: number;
-  playerNames?: string[];
-  playerLabelHeight?: number;
-};
-
-const TEMP_PLAYER_COUNT = 3;
-
-const getTempPlayerNames = (count: number) =>
-  Array.from({ length: count }, (_, index) => `player${index + 1}`);
-
-export default function GroundDigModel({
-  isWaiting,
-  playerCount,
-  playerNames,
-  playerLabelHeight = 2,
-}: Props) {
+export function ControllerScene() {
   const [isLoaded, setIsLoaded] = useState(false);
-  const resolvedPlayerCount = playerCount ?? TEMP_PLAYER_COUNT;
-  const resolvedPlayerNames =
-    playerNames?.length ? playerNames : getTempPlayerNames(resolvedPlayerCount);
-  void isWaiting;
 
   return (
     <div className="ground-dig-root">
@@ -62,12 +41,7 @@ export default function GroundDigModel({
         }}
       >
         <Suspense fallback={null}>
-          <SceneContent
-            onReady={() => setIsLoaded(true)}
-            playerCount={resolvedPlayerCount}
-            playerNames={resolvedPlayerNames}
-            playerLabelHeight={playerLabelHeight}
-          />
+          <ControllerSceneContent onReady={() => setIsLoaded(true)} />
         </Suspense>
       </Canvas>
     </div>

@@ -3,12 +3,23 @@
 import { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { CONFIG } from "../../components/GroundDigModel/config/groundDigModelConfigController";
-import { LoadingOverlay } from "../../components/GroundDigModel/scene/LoadingOverlay";
-import { SceneContent } from "../../components/GroundDigModel/scene/SceneContentController";
-import "./BackGroundModel.css";
+import { CONFIG } from "@/components/GroundDigModel/config/groundDigModelConfig";
+import { LoadingOverlay } from "@/components/GroundDigModel/scene/LoadingOverlay";
+import { RoomSceneContent } from "./RoomSceneContent";
+import "@/components/GroundDigModel/GroundDigModel.css";
 
-export default function BackGroundModel() {
+type Props = {
+  playerCount: number;
+  playerNames: string[];
+  isWaiting?: boolean;
+  playerLabelHeight?: number;
+};
+
+export function RoomScene({
+  playerCount,
+  playerNames,
+  playerLabelHeight = 2,
+}: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
@@ -41,10 +52,14 @@ export default function BackGroundModel() {
         }}
       >
         <Suspense fallback={null}>
-          <SceneContent onReady={() => setIsLoaded(true)} />
+          <RoomSceneContent
+            onReady={() => setIsLoaded(true)}
+            playerCount={playerCount}
+            playerNames={playerNames}
+            playerLabelHeight={playerLabelHeight}
+          />
         </Suspense>
       </Canvas>
     </div>
   );
-
 }

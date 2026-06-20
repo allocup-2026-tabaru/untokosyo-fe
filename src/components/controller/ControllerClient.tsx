@@ -2,7 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useState } from "react";
-import BackGroundModel from "@/features/controller/BackGroundModel";
+import { ControllerScene } from "@/features/controller/scene/ControllerScene";
 import JellyButton from "@/components/controller/Arrow";
 import { NameInputScreen } from "@/features/controller/NameInputScreen";
 
@@ -15,7 +15,7 @@ export default function ControllerClient({ roomId }: Props) {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      <BackGroundModel />
+      <ControllerScene />
 
       <Canvas
         className="absolute inset-0 z-10"

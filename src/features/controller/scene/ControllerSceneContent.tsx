@@ -1,21 +1,20 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { OrbitControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
-import { CONFIG } from "../config/groundDigModelConfigController";
-import { FenceField } from "../models/FenceField";
-import { Forest } from "../models/Forest";
-import { Ground } from "../models/Ground";
-import { StaticModel } from "../models/StaticModel";
-import { SceneLights } from "./SceneLights";
-import { SkyDome } from "./SkyDome";
+import { CONFIG } from "../config/controllerSceneConfig";
+import { FenceField } from "@/components/GroundDigModel/models/FenceField";
+import { Forest } from "@/components/GroundDigModel/models/Forest";
+import { Ground } from "@/components/GroundDigModel/models/Ground";
+import { StaticModel } from "@/components/GroundDigModel/models/StaticModel";
+import { SceneLights } from "@/components/GroundDigModel/scene/SceneLights";
+import { SkyDome } from "@/components/GroundDigModel/scene/SkyDome";
 
 type Props = {
   onReady?: () => void;
 };
 
-export function SceneContent({ onReady }: Props) {
+export function ControllerSceneContent({ onReady }: Props) {
   const hasNotifiedReadyRef = useRef(false);
   const { camera, size } = useThree();
 
