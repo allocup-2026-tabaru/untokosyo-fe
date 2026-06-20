@@ -35,6 +35,10 @@ export function DogModel({
   onAnimationTimings,
 }: Props) {
   const groupRef = useRef<THREE.Group>(null);
+  const reportedTimingsRef = useRef<{
+    pullDurationMs: number;
+    pullOutDurationMs: number;
+  } | null>(null);
   const { scene, animations } = useGLTF(characterModel.path) as GLTF;
   const { actions, mixer } = useAnimations(animations, groupRef);
 
@@ -65,12 +69,23 @@ export function DogModel({
     pullAction.timeScale = settings.pullSpeed;
     pullOutAction.timeScale = settings.pullOutSpeed;
 
-    onAnimationTimings?.({
+    const nextTimings = {
       pullDurationMs:
         (pullAction.getClip().duration / Math.max(settings.pullSpeed, 0.01)) * 1000,
       pullOutDurationMs:
         (pullOutAction.getClip().duration / Math.max(settings.pullOutSpeed, 0.01)) * 1000,
-    });
+    };
+
+    const previousTimings = reportedTimingsRef.current;
+    const hasChanged =
+      !previousTimings ||
+      previousTimings.pullDurationMs !== nextTimings.pullDurationMs ||
+      previousTimings.pullOutDurationMs !== nextTimings.pullOutDurationMs;
+
+    if (hasChanged) {
+      reportedTimingsRef.current = nextTimings;
+      onAnimationTimings?.(nextTimings);
+    }
 
     let currentAction: THREE.AnimationAction | null = null;
     let shouldPlayPull = true;
