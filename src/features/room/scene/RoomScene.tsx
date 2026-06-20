@@ -18,6 +18,7 @@ type Props = {
   playerSlipFlags?: boolean[];
   onKabuEscapeStart?: () => void;
   playerLabelHeight?: number;
+  kabuEscapeTriggered?: boolean;
 };
 
 export function RoomScene({
@@ -27,6 +28,7 @@ export function RoomScene({
   playerSlipFlags = [],
   onKabuEscapeStart,
   playerLabelHeight = 2,
+  kabuEscapeTriggered = false,
 }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -68,6 +70,7 @@ export function RoomScene({
             playerAvatars={playerAvatars}
             playerSlipFlags={playerSlipFlags}
             playerLabelHeight={playerLabelHeight}
+            kabuEscapeTriggered={kabuEscapeTriggered}
           />
         </Suspense>
       </Canvas>
