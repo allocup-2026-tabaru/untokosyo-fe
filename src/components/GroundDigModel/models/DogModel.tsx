@@ -14,7 +14,7 @@ import {
 
 export function DogModel() {
   const groupRef = useRef<THREE.Group>(null);
-  const { scene, animations } = useGLTF(CONFIG.dog.path) as GLTF;
+  const { scene, animations } = useGLTF(CONFIG.dog.path) as unknown as GLTF;
   const { actions, mixer } = useAnimations(animations, groupRef);
 
   const model = useMemo(() => {

@@ -19,7 +19,7 @@ export const randomRange = (rng: () => number, min: number, max: number) => {
   return min + rng() * (max - min);
 };
 
-export const pick = <T,>(rng: () => number, items: T[]): T => {
+export const pick = <T,>(rng: () => number, items: readonly T[]): T => {
   return items[Math.floor(rng() * items.length)];
 };
 
