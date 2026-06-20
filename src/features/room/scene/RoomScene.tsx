@@ -11,6 +11,7 @@ import "@/components/ground-dig-model/GroundDigModel.css";
 type Props = {
   playerCount: number;
   playerNames: string[];
+  playerSlipFlags?: boolean[];
   isWaiting?: boolean;
   playerLabelHeight?: number;
 };
@@ -18,6 +19,7 @@ type Props = {
 export function RoomScene({
   playerCount,
   playerNames,
+  playerSlipFlags = [],
   playerLabelHeight = 2,
 }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -56,6 +58,7 @@ export function RoomScene({
             onReady={() => setIsLoaded(true)}
             playerCount={playerCount}
             playerNames={playerNames}
+            playerSlipFlags={playerSlipFlags}
             playerLabelHeight={playerLabelHeight}
           />
         </Suspense>

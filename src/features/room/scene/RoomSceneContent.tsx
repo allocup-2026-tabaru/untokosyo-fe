@@ -19,6 +19,7 @@ type Props = {
   onReady?: () => void;
   playerCount?: number;
   playerNames?: string[];
+  playerSlipFlags?: boolean[];
   playerLabelHeight?: number;
 };
 
@@ -26,6 +27,7 @@ export function RoomSceneContent({
   onReady,
   playerCount = 1,
   playerNames = [],
+  playerSlipFlags = [],
   playerLabelHeight = 1.45,
 }: Props) {
   const hasNotifiedReadyRef = useRef(false);
@@ -49,6 +51,10 @@ export function RoomSceneContent({
         (_, index) => playerNames[index] ?? `player${index + 1}`
       ),
     [characterPlacements, playerNames]
+  );
+  const resolvedPlayerSlipFlags = useMemo(
+    () => characterPlacements.map((_, index) => playerSlipFlags[index] ?? false),
+    [characterPlacements, playerSlipFlags]
   );
 
   useEffect(() => {
@@ -100,6 +106,7 @@ export function RoomSceneContent({
           key={`${index}-${playerCount}`}
           placement={placement}
           name={resolvedPlayerNames[index]}
+          slipWhenKabuEscapes={resolvedPlayerSlipFlags[index]}
           playerLabelHeight={playerLabelHeight}
           animationStartAtMs={animationStartAtMs}
           onAnimationTimings={index === 0 ? setRope2AnimationTimings : undefined}

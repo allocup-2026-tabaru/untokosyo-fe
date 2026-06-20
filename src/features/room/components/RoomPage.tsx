@@ -14,12 +14,14 @@ export function RoomPage({ roomId }: Props) {
 
   // TODO: WebSocket 接続後はリアルタイムの参加者データに差し替え
   const playerNames = mockRoomParticipants.map((p) => p.name);
+  const playerSlipFlags = mockRoomParticipants.map((p) => p.slipOnKabuEscape ?? false);
 
   return (
     <main className="relative min-h-screen overflow-hidden">
       <RoomScene
         playerCount={playerNames.length}
         playerNames={playerNames}
+        playerSlipFlags={playerSlipFlags}
         isWaiting={isRoomModalVisible}
       />
       <RoomModal

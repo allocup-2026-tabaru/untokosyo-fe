@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useAnimations, useGLTF } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import {
@@ -22,6 +23,7 @@ type Props = {
   transform?: TransformConfig;
   startDelayMs?: number;
   startAtMs?: number;
+  slipWhenKabuEscapes?: boolean;
   onAnimationTimings?: (timings: {
     pullDurationMs: number;
     pullOutDurationMs: number;
@@ -34,6 +36,7 @@ export function DogModel({
   transform,
   startDelayMs = 0,
   startAtMs,
+  slipWhenKabuEscapes = false,
   onAnimationTimings,
 }: Props) {
   const groupRef = useRef<THREE.Group>(null);
@@ -41,6 +44,8 @@ export function DogModel({
     pullDurationMs: number;
     pullOutDurationMs: number;
   } | null>(null);
+  const hasSlippedRef = useRef(false);
+  const loopTimeoutRef = useRef<number | undefined>(undefined);
   const { scene, animations } = useGLTF(characterModel.path) as unknown as GLTF;
   const { actions, mixer } = useAnimations(animations, groupRef);
 
@@ -59,6 +64,11 @@ export function DogModel({
     const settings = characterModel.animation;
     const pullAction = actions[settings.pullName];
     const pullOutAction = actions[settings.pullOutName];
+
+    if (hasSlippedRef.current) {
+      mixer.stopAllAction();
+      return;
+    }
 
     if (!pullAction || !pullOutAction) {
       return;
@@ -91,9 +101,12 @@ export function DogModel({
 
     let currentAction: THREE.AnimationAction | null = null;
     let shouldPlayPull = true;
-    let timeoutId: number | undefined;
 
     const playAction = (action: THREE.AnimationAction) => {
+      if (hasSlippedRef.current) {
+        return;
+      }
+
       if (currentAction) {
         currentAction.fadeOut(settings.fadeDuration);
       }
@@ -109,12 +122,16 @@ export function DogModel({
     };
 
     const onFinished = () => {
+      if (hasSlippedRef.current) {
+        return;
+      }
+
       const pause = shouldPlayPull
         ? settings.pauseAfterPull
         : settings.pauseAfterPullOut;
 
       shouldPlayPull = !shouldPlayPull;
-      timeoutId = window.setTimeout(playNext, pause * 1000);
+      loopTimeoutRef.current = window.setTimeout(playNext, pause * 1000);
     };
 
     mixer.addEventListener("finished", onFinished);
@@ -122,12 +139,13 @@ export function DogModel({
       startAtMs !== undefined
         ? Math.max(0, startAtMs - performance.now())
         : startDelayMs;
-    timeoutId = window.setTimeout(playNext, initialDelayMs);
+    loopTimeoutRef.current = window.setTimeout(playNext, initialDelayMs);
 
     return () => {
       mixer.removeEventListener("finished", onFinished);
-      if (timeoutId !== undefined) {
-        window.clearTimeout(timeoutId);
+      if (loopTimeoutRef.current !== undefined) {
+        window.clearTimeout(loopTimeoutRef.current);
+        loopTimeoutRef.current = undefined;
       }
       mixer.stopAllAction();
     };
@@ -139,6 +157,35 @@ export function DogModel({
     startAtMs,
     startDelayMs,
   ]);
+
+  useFrame(() => {
+    if (!slipWhenKabuEscapes || hasSlippedRef.current || typeof window === "undefined") {
+      return;
+    }
+
+    const debugConfig = window.__untokosyoKabuRopeRigDebug;
+    if (!debugConfig?.kabuEscape) {
+      return;
+    }
+
+    const slipAction = actions.slip;
+    if (!slipAction) {
+      return;
+    }
+
+    hasSlippedRef.current = true;
+    if (loopTimeoutRef.current !== undefined) {
+      window.clearTimeout(loopTimeoutRef.current);
+      loopTimeoutRef.current = undefined;
+    }
+
+    mixer.stopAllAction();
+    slipAction.setLoop(THREE.LoopOnce, 1);
+    slipAction.clampWhenFinished = true;
+    slipAction.reset();
+    slipAction.fadeIn(characterModel.animation.fadeDuration);
+    slipAction.play();
+  });
 
   return (
     <group ref={groupRef}>
