@@ -8,10 +8,14 @@ const MAX_PULL = 2;
 
 type Props = {
   operate: boolean;
+  onPullStart?: () => void;
+  onPullEnd?: () => void;
 };
 
 export function PullArrowIndicator({
   operate,
+  onPullStart,
+  onPullEnd,
 }: Props) {
   const [dragging, setDragging] =
     useState(false);
@@ -73,6 +77,7 @@ export function PullArrowIndicator({
       setDragLength(0);
       setDragging(true);
       vibratedLevel.current = 0;
+      onPullStart?.();
     };
 
     const onPointerMove = (
@@ -167,6 +172,7 @@ export function PullArrowIndicator({
 
       startPos.current = null;
       vibratedLevel.current = 0;
+      onPullEnd?.();
     };
 
     const onTouchMove = (
@@ -230,7 +236,7 @@ export function PullArrowIndicator({
         onTouchMove
       );
     };
-  }, [dragging, operate]);
+  }, [dragging, operate, onPullStart, onPullEnd]);
 
   useFrame(({ clock }) => {
     if (

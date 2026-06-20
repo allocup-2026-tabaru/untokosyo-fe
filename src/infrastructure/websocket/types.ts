@@ -9,6 +9,10 @@ export type ClientMessage = AuthMessage | PullMessage | ReleaseMessage | PongMes
 
 // ─── 共通受信イベント（Host・Player両方） ────────────────────────────────────
 
+export type GameCountdownEvent = {
+  type: "game_countdown";
+  payload: { scheduledStartAt: number };
+};
 export type GameStartEvent = { type: "game_start"; payload: { startedAt: number } };
 export type PingEvent = { type: "ping"; serverTimestamp: number };
 
@@ -71,6 +75,7 @@ export type HostGameFinishedEvent = {
 export type HostServerEvent =
   | HostRoomStateEvent
   | PlayerJoinedEvent
+  | GameCountdownEvent
   | GameStartEvent
   | PingEvent
   | TurnipUpdateEvent
@@ -107,6 +112,7 @@ export type ErrorEvent = {
 
 export type PlayerServerEvent =
   | PlayerRoomStateEvent
+  | GameCountdownEvent
   | GameStartEvent
   | PingEvent
   | PlayerPlayerUpdateEvent
