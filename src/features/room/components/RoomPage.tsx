@@ -13,7 +13,7 @@ export function RoomPage({ roomId }: Props) {
 
   return (
     <main className="relative min-h-screen overflow-hidden">
-      <GroundDigModel />
+      <GroundDigModel isWaiting={isRoomModalVisible} />
       <RoomModal
         roomId={roomId}
         isVisible={isRoomModalVisible}

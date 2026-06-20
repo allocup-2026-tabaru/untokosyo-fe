@@ -21,7 +21,7 @@ export function RoomModal({ roomId, isVisible, onStart }: Props) {
         />
 
         <section
-          className="pointer-events-auto ml-auto w-fit max-w-[14rem] rounded-[1rem] border border-white/10 bg-black/[0.36] p-4 text-white shadow-[0_24px_64px_rgba(0,0,0,0.22)] backdrop-blur-lg lg:absolute lg:bottom-8 lg:right-8"
+          className="pointer-events-auto ml-auto w-fit max-w-[18rem] rounded-[1rem] border border-white/10 bg-black/[0.36] p-4 text-white shadow-[0_24px_64px_rgba(0,0,0,0.22)] backdrop-blur-lg lg:absolute lg:bottom-8 lg:right-8"
         >
           <p className="text-sm font-medium tracking-[0.24em] text-white/60 uppercase">
             Start
