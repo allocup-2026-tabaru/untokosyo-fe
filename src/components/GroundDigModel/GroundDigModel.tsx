@@ -8,7 +8,11 @@ import { LoadingOverlay } from "./scene/LoadingOverlay";
 import { SceneContent } from "./scene/SceneContent";
 import "./GroundDigModel.css";
 
-export default function GroundDigModel() {
+type Props = {
+  isWaiting?: boolean;
+};
+
+export default function GroundDigModel({ isWaiting }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
