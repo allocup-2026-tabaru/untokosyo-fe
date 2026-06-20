@@ -1,8 +1,14 @@
 import { CONFIG, type CharacterModelConfig } from "../config/groundDigModelConfig";
-import { createRandom, pick, randomRange } from "./groundDigModelUtils";
+import {
+  createDogMaterialColors,
+  createJiji2MaterialColors,
+  createRandomSource,
+} from "../config/groundDigModelColorUtils";
+import { pick, randomRange } from "./groundDigModelUtils";
 
 export type DogPlacement = {
   characterModel: CharacterModelConfig;
+  materialColors: Record<string, string>;
   transform: {
     position: {
       x: number;
@@ -32,10 +38,16 @@ export const getDogPlacements = (playerCount: number): DogPlacement[] => {
 
   return Array.from({ length: safeCount }, (_, index) => {
     const offset = index - centerOffset;
-    const rng = createRandom(CONFIG.seed + safeCount * 97 + index * 53);
+    const rng = createRandomSource();
+    const characterModel = pick(rng, CONFIG.characterModels);
+    const materialColors =
+      characterModel.id === "jiji2"
+        ? createJiji2MaterialColors()
+        : createDogMaterialColors();
 
     return {
-      characterModel: pick(rng, CONFIG.characterModels),
+      characterModel,
+      materialColors,
       transform: {
         position: {
           x: basePosition.x + offset * spacing,
