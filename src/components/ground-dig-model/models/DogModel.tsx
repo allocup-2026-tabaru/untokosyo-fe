@@ -47,11 +47,24 @@ export function DogModel({
     pullOutDurationMs: number;
   } | null>(null);
   const hasSlippedRef = useRef(false);
+  const hasStoppedOnKabuEscapeRef = useRef(false);
   const loopTimeoutRef = useRef<number | undefined>(undefined);
   const slipTimeoutRef = useRef<number | undefined>(undefined);
   const slipTriggerQueuedRef = useRef(false);
   const { scene, animations } = useGLTF(characterModel.path) as unknown as GLTF;
   const { actions, mixer } = useAnimations(animations, groupRef);
+
+  const pauseAllActions = () => {
+    Object.values(actions).forEach((action) => {
+      action.paused = true;
+    });
+  };
+
+  const resumeAllActions = () => {
+    Object.values(actions).forEach((action) => {
+      action.paused = false;
+    });
+  };
 
   const clonedModel = useMemo(() => {
     const cloned = SkeletonUtils.clone(scene) as THREE.Group;
@@ -70,6 +83,7 @@ export function DogModel({
     const pullOutAction = actions[settings.pullOutName];
 
     if (hasSlippedRef.current) {
+      resumeAllActions();
       mixer.stopAllAction();
       return;
     }
@@ -156,6 +170,7 @@ export function DogModel({
         slipTimeoutRef.current = undefined;
       }
       slipTriggerQueuedRef.current = false;
+      hasStoppedOnKabuEscapeRef.current = false;
       mixer.stopAllAction();
     };
   }, [
@@ -168,20 +183,35 @@ export function DogModel({
   ]);
 
   useFrame(() => {
-    if (
-      !slipWhenKabuEscapes ||
-      hasSlippedRef.current ||
-      typeof window === "undefined"
-    ) {
+    if (typeof window === "undefined" || hasSlippedRef.current) {
       return;
     }
 
     const debugConfig = window.__untokosyoKabuRopeRigDebug;
     if (!debugConfig?.kabuEscape) {
+      hasStoppedOnKabuEscapeRef.current = false;
       slipTriggerQueuedRef.current = false;
       if (slipTimeoutRef.current !== undefined) {
         window.clearTimeout(slipTimeoutRef.current);
         slipTimeoutRef.current = undefined;
+      }
+      return;
+    }
+
+    if (!slipWhenKabuEscapes) {
+      if (!hasStoppedOnKabuEscapeRef.current) {
+        hasStoppedOnKabuEscapeRef.current = true;
+        slipTriggerQueuedRef.current = false;
+        if (loopTimeoutRef.current !== undefined) {
+          window.clearTimeout(loopTimeoutRef.current);
+          loopTimeoutRef.current = undefined;
+        }
+        if (slipTimeoutRef.current !== undefined) {
+          window.clearTimeout(slipTimeoutRef.current);
+          slipTimeoutRef.current = undefined;
+        }
+        resumeAllActions();
+        pauseAllActions();
       }
       return;
     }
@@ -204,10 +234,12 @@ export function DogModel({
         loopTimeoutRef.current = undefined;
       }
 
+      resumeAllActions();
       mixer.stopAllAction();
       slipAction.setLoop(THREE.LoopOnce, 1);
       slipAction.clampWhenFinished = true;
       slipAction.reset();
+      slipAction.paused = false;
       slipAction.fadeIn(characterModel.animation.fadeDuration);
       slipAction.play();
     }, debugConfig.slipDelayMs ?? DEFAULT_SLIP_DELAY_MS);
