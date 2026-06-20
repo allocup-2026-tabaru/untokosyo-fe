@@ -8,9 +8,12 @@ import { LoadingOverlay } from "@/components/ground-dig-model/scene/LoadingOverl
 import { RoomSceneContent } from "./RoomSceneContent";
 import "@/components/ground-dig-model/GroundDigModel.css";
 
+import type { PlayerAvatarInfo } from "@/components/ground-dig-model/utils/groundDigModelPlacements";
+
 type Props = {
   playerCount: number;
   playerNames: string[];
+  playerAvatars?: PlayerAvatarInfo[];
   isWaiting?: boolean;
   playerLabelHeight?: number;
 };
@@ -18,6 +21,7 @@ type Props = {
 export function RoomScene({
   playerCount,
   playerNames,
+  playerAvatars,
   playerLabelHeight = 2,
 }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -56,6 +60,7 @@ export function RoomScene({
             onReady={() => setIsLoaded(true)}
             playerCount={playerCount}
             playerNames={playerNames}
+            playerAvatars={playerAvatars}
             playerLabelHeight={playerLabelHeight}
           />
         </Suspense>

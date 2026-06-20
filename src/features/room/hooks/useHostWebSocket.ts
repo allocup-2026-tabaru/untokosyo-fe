@@ -3,14 +3,30 @@
 import { useEffect, useRef, useState } from "react";
 import { HostWebSocketClient } from "@/infrastructure/websocket/HostWebSocketClient";
 import type { HostServerEvent } from "@/infrastructure/websocket/types";
+import { getRoom } from "@/infrastructure/http/roomApi";
 
-type Player = { playerID: string; name: string };
+type Player = {
+  playerID: string;
+  name: string;
+  avatarModel?: string;
+  materialColors?: Record<string, string>;
+};
 type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
 type HostSessionData = {
   hostPlayerID: string;
   token: string;
 };
+
+async function fetchPlayers(roomID: string): Promise<Player[]> {
+  const room = await getRoom(roomID);
+  return Object.values(room.Players).map((p) => ({
+    playerID: p.ID,
+    name: p.Name,
+    avatarModel: p.AvatarModel,
+    materialColors: p.MaterialColors,
+  }));
+}
 
 function getHostSessionData(roomID: string): HostSessionData | null {
   try {
@@ -44,15 +60,8 @@ export function useHostWebSocket(roomID: string) {
     client.onClose(() => setStatus("disconnected"));
 
     client.onEvent((event: HostServerEvent) => {
-      if (event.type === "room_state") {
-        setPlayers(
-          event.payload.players.map((p) => ({ playerID: p.playerID, name: p.name }))
-        );
-      } else if (event.type === "player_joined") {
-        setPlayers((prev) => {
-          if (prev.some((p) => p.playerID === event.payload.playerID)) return prev;
-          return [...prev, { playerID: event.payload.playerID, name: event.payload.name }];
-        });
+      if (event.type === "room_state" || event.type === "player_joined") {
+        fetchPlayers(roomID).then(setPlayers).catch(console.error);
       }
     });
 

@@ -31,6 +31,51 @@ export type PlacementConfig = {
   startDelayRange: { min: number; max: number };
 };
 
+export type PlayerAvatarInfo = {
+  avatarModel: string;
+  materialColors: Record<string, string>;
+};
+
+export const getPlacementsFromPlayerAvatars = (
+  playerAvatars: PlayerAvatarInfo[],
+  config: PlacementConfig
+): DogPlacement[] => {
+  if (playerAvatars.length === 0) return [];
+
+  const baseCharacterModel = CONFIG.characterModels[0];
+  const basePosition = baseCharacterModel.position;
+  const baseRotationY = baseCharacterModel.rotation.y ?? 0;
+  const spacing =
+    playerAvatars.length === 1
+      ? 0
+      : Math.min(config.maxSpacing, config.totalSpacingWidth / (playerAvatars.length - 1));
+  const centerOffset = (playerAvatars.length - 1) / 2;
+
+  return playerAvatars.map((avatar, index) => {
+    const offset = index - centerOffset;
+    const rng = createRandomSource();
+    const characterModel =
+      CONFIG.characterModels.find((m) => m.id === avatar.avatarModel) ?? CONFIG.characterModels[0];
+
+    return {
+      characterModel,
+      materialColors: avatar.materialColors,
+      transform: {
+        position: {
+          x: basePosition.x + offset * spacing,
+          y: basePosition.y,
+          z: basePosition.z + Math.abs(offset) * config.zDepthFactor,
+        },
+        rotation: {
+          y: baseRotationY + offset * config.rotationFactor,
+        },
+        scale: baseCharacterModel.scale,
+      },
+      startDelayMs: randomRange(rng, config.startDelayRange.min, config.startDelayRange.max),
+    };
+  });
+};
+
 export const getDogPlacements = (playerCount: number, config: PlacementConfig): DogPlacement[] => {
   const safeCount = Math.max(0, Math.floor(playerCount));
 
