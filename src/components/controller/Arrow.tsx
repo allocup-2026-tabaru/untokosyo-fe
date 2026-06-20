@@ -88,6 +88,9 @@ export default function PullArrowIndicator() {
           1
         );
 
+      // ここからバイブレーション周りの実装→実機で振動が確認できないが、
+      // 解決策も見つからないため一度放置している。
+
       if (
         "vibrate" in navigator &&
         charge > 0.3 &&
@@ -119,6 +122,8 @@ export default function PullArrowIndicator() {
         vibratedLevel.current = 3;
       }
     };
+
+    // ここまでバイブレーション周りの設定
 
     const onPointerUp = () => {
       setDragging(false);
