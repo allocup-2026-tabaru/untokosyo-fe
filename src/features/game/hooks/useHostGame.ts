@@ -118,11 +118,15 @@ export function useHostGame() {
   const { status: wsStatus, send } = useWebSocket({ url: wsUrl, onMessage: handleMessage });
 
   // sendRefを常に最新のsendで更新
-  sendRef.current = send;
+  useEffect(() => {
+    sendRef.current = send;
+  });
 
   // WS接続確立後に認証メッセージを送る
   const tokenRef = useRef(token);
-  tokenRef.current = token;
+  useEffect(() => {
+    tokenRef.current = token;
+  });
   useEffect(() => {
     if (wsStatus === "connected" && tokenRef.current) {
       send(JSON.stringify({ type: "auth", token: tokenRef.current }));
