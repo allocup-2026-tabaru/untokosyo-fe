@@ -4,7 +4,11 @@
 import React, { useState } from "react";
 import "./NameInputScreen.css";
 
-const NameInputScreen = () => {
+type Props = {
+  onStart: () => void;
+};
+
+const NameInputScreen = ({ onStart }: Props) => {
   const [playerName, setPlayerName] = useState("");
 
   return (
@@ -26,6 +30,7 @@ const NameInputScreen = () => {
           className="submit-button"
           onClick={() => {
             console.log("Player Name:", playerName);
+            onStart();
           }}
         >
          Start
