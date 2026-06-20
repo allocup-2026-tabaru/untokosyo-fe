@@ -9,18 +9,21 @@ export type CreateRoomResponse = {
 export type RoomStatus = "waiting" | "playing" | "finished";
 
 export type RoomPlayer = {
-  playerID: string;
-  name: string;
-  status: string;
-  isPulling: boolean;
-  pullAccumulation: number;
+  ID: string;
+  Name: string;
+  Status: string;
+  IsPulling: boolean;
+  PullAccumulation: number;
+  AvatarModel?: string;
+  MaterialColors?: Record<string, string>;
+  JoinedAt: string;
 };
 
 export type RoomDetail = {
   ID: string;
   HostPlayerID: string;
   Status: RoomStatus;
-  Players: RoomPlayer[];
+  Players: Record<string, RoomPlayer>;
   Winner: string | null;
   CreatedAt: string;
   StartedAt: string | null;
@@ -43,8 +46,13 @@ export function getRoom(roomID: string): Promise<RoomDetail> {
   return get<RoomDetail>(`/rooms/${roomID}`);
 }
 
-export function joinRoom(roomID: string, name: string): Promise<JoinRoomResponse> {
-  return post<JoinRoomResponse>(`/rooms/${roomID}/players`, { name });
+export function joinRoom(
+  roomID: string,
+  name: string,
+  avatarModel?: string,
+  materialColors?: Record<string, string>
+): Promise<JoinRoomResponse> {
+  return post<JoinRoomResponse>(`/rooms/${roomID}/players`, { name, avatarModel, materialColors });
 }
 
 export function startGame(roomID: string, playerID: string): Promise<StartGameResponse> {

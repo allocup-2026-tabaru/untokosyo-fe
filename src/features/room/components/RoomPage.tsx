@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { RoomScene } from "@/features/room/scene/RoomScene";
-import { mockRoomParticipants } from "../constants/mockRoomParticipants";
+import { useHostWebSocket } from "../hooks/useHostWebSocket";
+import { startGame } from "@/infrastructure/http/roomApi";
 import { RoomModal } from "./RoomModal";
 import { RoomResultModal } from "./RoomResultModal";
 
@@ -12,32 +13,19 @@ type Props = {
 
 export function RoomPage({ roomId }: Props) {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(true);
-  const [isResultModalVisible, setIsResultModalVisible] = useState(false);
-  const resultTimeoutRef = useRef<number | undefined>(undefined);
-  const hasQueuedResultRef = useRef(false);
+  const { players, hostPlayerID } = useHostWebSocket(roomId);
 
-  // TODO: WebSocket 接続後はリアルタイムの参加者データに差し替え
-  const playerNames = mockRoomParticipants.map((p) => p.name);
-  const playerSlipFlags = mockRoomParticipants.map((p) => p.slipOnKabuEscape ?? false);
+  const participantPlayers = players.filter((p) => p.playerID !== hostPlayerID);
+  const playerNames = participantPlayers.map((p) => p.name);
+  const playerAvatars = participantPlayers
+    .filter((p) => p.avatarModel && p.materialColors)
+    .map((p) => ({ avatarModel: p.avatarModel!, materialColors: p.materialColors! }));
 
-  useEffect(() => {
-    return () => {
-      if (resultTimeoutRef.current !== undefined) {
-        window.clearTimeout(resultTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleKabuEscapeStart = () => {
-    if (hasQueuedResultRef.current) {
-      return;
+  const handleStart = async () => {
+    if (hostPlayerID) {
+      await startGame(roomId, hostPlayerID);
     }
-
-    hasQueuedResultRef.current = true;
-    resultTimeoutRef.current = window.setTimeout(() => {
-      setIsResultModalVisible(true);
-      resultTimeoutRef.current = undefined;
-    }, 2000);
+    setIsRoomModalVisible(false);
   };
 
   return (
@@ -45,18 +33,18 @@ export function RoomPage({ roomId }: Props) {
       <RoomScene
         playerCount={playerNames.length}
         playerNames={playerNames}
-        playerSlipFlags={playerSlipFlags}
-        onKabuEscapeStart={handleKabuEscapeStart}
+        playerAvatars={playerAvatars.length > 0 ? playerAvatars : undefined}
+        isWaiting={isRoomModalVisible}
       />
       <RoomModal
         roomId={roomId}
         isVisible={isRoomModalVisible}
-        onStart={() => setIsRoomModalVisible(false)}
+        onStart={handleStart}
       />
-      <RoomResultModal
+      {/* <RoomResultModal
         participants={mockRoomParticipants}
         isVisible={isResultModalVisible}
-      />
+      /> */}
     </main>
   );
 }

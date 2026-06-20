@@ -9,7 +9,11 @@ import { Ground } from "@/components/ground-dig-model/models/Ground";
 import { KabuRopeRig } from "@/components/ground-dig-model/scene/KabuRopeRig";
 import { Rope2Model } from "@/components/ground-dig-model/models/Rope2Model";
 import { StaticModel } from "@/components/ground-dig-model/models/StaticModel";
-import { getDogPlacements } from "@/components/ground-dig-model/utils/groundDigModelPlacements";
+import {
+  getDogPlacements,
+  getPlacementsFromPlayerAvatars,
+  type PlayerAvatarInfo,
+} from "@/components/ground-dig-model/utils/groundDigModelPlacements";
 import { CharacterPlacement } from "@/components/ground-dig-model/scene/CharacterPlacement";
 import { SceneLights } from "@/components/ground-dig-model/scene/SceneLights";
 import { SkyDome } from "@/components/ground-dig-model/scene/SkyDome";
@@ -20,6 +24,7 @@ type Props = {
   onKabuEscapeStart?: () => void;
   playerCount?: number;
   playerNames?: string[];
+  playerAvatars?: PlayerAvatarInfo[];
   playerSlipFlags?: boolean[];
   playerLabelHeight?: number;
 };
@@ -29,6 +34,7 @@ export function RoomSceneContent({
   onKabuEscapeStart,
   playerCount = 1,
   playerNames = [],
+  playerAvatars,
   playerSlipFlags = [],
   playerLabelHeight = 1.45,
 }: Props) {
@@ -38,8 +44,11 @@ export function RoomSceneContent({
     pullOutDurationMs: number;
   } | null>(null);
   const characterPlacements = useMemo(
-    () => getDogPlacements(playerCount, ROOM_PLACEMENT_CONFIG),
-    [playerCount]
+    () =>
+      playerAvatars && playerAvatars.length > 0
+        ? getPlacementsFromPlayerAvatars(playerAvatars, ROOM_PLACEMENT_CONFIG)
+        : getDogPlacements(playerCount, ROOM_PLACEMENT_CONFIG),
+    [playerAvatars, playerCount]
   );
   const activeCharacterPlacement = characterPlacements[0];
   const animationStartDelayMs = activeCharacterPlacement?.startDelayMs ?? 0;

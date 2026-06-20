@@ -8,9 +8,13 @@ import { LoadingOverlay } from "@/components/ground-dig-model/scene/LoadingOverl
 import { RoomSceneContent } from "./RoomSceneContent";
 import "@/components/ground-dig-model/GroundDigModel.css";
 
+import type { PlayerAvatarInfo } from "@/components/ground-dig-model/utils/groundDigModelPlacements";
+
 type Props = {
   playerCount: number;
   playerNames: string[];
+  playerAvatars?: PlayerAvatarInfo[];
+  isWaiting?: boolean;
   playerSlipFlags?: boolean[];
   onKabuEscapeStart?: () => void;
   playerLabelHeight?: number;
@@ -19,6 +23,7 @@ type Props = {
 export function RoomScene({
   playerCount,
   playerNames,
+  playerAvatars,
   playerSlipFlags = [],
   onKabuEscapeStart,
   playerLabelHeight = 2,
@@ -60,6 +65,7 @@ export function RoomScene({
             onKabuEscapeStart={onKabuEscapeStart}
             playerCount={playerCount}
             playerNames={playerNames}
+            playerAvatars={playerAvatars}
             playerSlipFlags={playerSlipFlags}
             playerLabelHeight={playerLabelHeight}
           />

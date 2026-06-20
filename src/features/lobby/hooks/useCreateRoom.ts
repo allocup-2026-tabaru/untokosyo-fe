@@ -19,8 +19,14 @@ export function useCreateRoom(): State {
   useEffect(() => {
     let cancelled = false;
     createRoom()
-      .then(({ roomID }) => {
-        if (!cancelled) setState({ roomId: roomID, isPending: false, error: null });
+      .then(({ roomID, hostPlayerID, token }) => {
+        if (!cancelled) {
+          sessionStorage.setItem(
+            `room_host_${roomID}`,
+            JSON.stringify({ hostPlayerID, token })
+          );
+          setState({ roomId: roomID, isPending: false, error: null });
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled)

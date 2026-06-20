@@ -13,6 +13,7 @@ export function RoomModal({ roomId, isVisible, onStart }: Props) {
     <ModalOverlay isVisible={isVisible}>
       <div className="relative flex h-full w-full flex-col gap-4 p-4 sm:p-6 lg:p-8">
         <RoomQrCard
+          roomId={roomId}
           className="pointer-events-auto w-fit max-w-full rounded-[1rem] border border-white/10 bg-black/[0.28] text-white shadow-[0_24px_64px_rgba(0,0,0,0.22)] backdrop-blur-lg lg:absolute lg:left-6 lg:top-6"
         />
 
