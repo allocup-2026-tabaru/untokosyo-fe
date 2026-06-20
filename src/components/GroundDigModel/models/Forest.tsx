@@ -12,8 +12,8 @@ import {
 } from "../utils/groundDigModelUtils";
 
 export function Forest() {
-  const treeA = useGLTF(CONFIG.forest.paths[0]) as GLTF;
-  const treeB = useGLTF(CONFIG.forest.paths[1]) as GLTF;
+  const treeA = useGLTF(CONFIG.forest.paths[0]) as unknown as GLTF;
+  const treeB = useGLTF(CONFIG.forest.paths[1]) as unknown as GLTF;
 
   const treeBases = useMemo(() => {
     return [treeA.scene, treeB.scene].map((scene) =>
