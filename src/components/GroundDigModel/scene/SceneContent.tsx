@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { OrbitControls } from "@react-three/drei";
 import { CONFIG } from "../config/groundDigModelConfig";
 import { DogModel } from "../models/DogModel";
@@ -13,10 +13,41 @@ import { SkyDome } from "./SkyDome";
 
 type Props = {
   onReady?: () => void;
+  playerCount?: number;
 };
 
-export function SceneContent({ onReady }: Props) {
+const getDogPlacements = (playerCount: number) => {
+  const safeCount = Math.max(0, Math.floor(playerCount));
+
+  if (safeCount === 0) {
+    return [];
+  }
+
+  const basePosition = CONFIG.dog.position;
+  const baseRotationY = CONFIG.dog.rotation.y ?? 0;
+  const spacing = safeCount === 1 ? 0 : Math.min(1.0, 2.6 / (safeCount - 1));
+  const centerOffset = (safeCount - 1) / 2;
+
+  return Array.from({ length: safeCount }, (_, index) => {
+    const offset = index - centerOffset;
+
+    return {
+      position: {
+        x: basePosition.x + offset * spacing,
+        y: basePosition.y,
+        z: basePosition.z + Math.abs(offset) * 0.12,
+      },
+      rotation: {
+        y: baseRotationY + offset * 0.06,
+      },
+      scale: CONFIG.dog.scale,
+    };
+  });
+};
+
+export function SceneContent({ onReady, playerCount = 1 }: Props) {
   const hasNotifiedReadyRef = useRef(false);
+  const dogPlacements = useMemo(() => getDogPlacements(playerCount), [playerCount]);
 
   useEffect(() => {
     if (hasNotifiedReadyRef.current) {
@@ -60,7 +91,12 @@ export function SceneContent({ onReady }: Props) {
         transform={CONFIG.models.rope2}
         meshOptions={{ castShadow: true, receiveShadow: true }}
       />
-      <DogModel />
+      {dogPlacements.map((transform, index) => (
+        <DogModel
+          key={`${index}-${playerCount}`}
+          transform={transform}
+        />
+      ))}
       <FenceField />
       <Forest />
       <OrbitControls

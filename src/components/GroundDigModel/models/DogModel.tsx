@@ -5,28 +5,32 @@ import * as THREE from "three";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
-import { CONFIG } from "../config/groundDigModelConfig";
+import { CONFIG, type TransformConfig } from "../config/groundDigModelConfig";
 import {
   applyTransform,
   recolorNamedMaterials,
   setupMeshes,
 } from "../utils/groundDigModelUtils";
 
-export function DogModel() {
+type Props = {
+  transform?: TransformConfig;
+};
+
+export function DogModel({ transform }: Props) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(CONFIG.dog.path) as GLTF;
   const { actions, mixer } = useAnimations(animations, groupRef);
 
   const model = useMemo(() => {
     const cloned = SkeletonUtils.clone(scene) as THREE.Group;
-    applyTransform(cloned, CONFIG.dog);
+    applyTransform(cloned, transform ?? CONFIG.dog);
     recolorNamedMaterials(cloned, CONFIG.dog.materialColors);
     setupMeshes(cloned, {
       castShadow: true,
       receiveShadow: true,
     });
     return cloned;
-  }, [scene]);
+  }, [scene, transform]);
 
   useEffect(() => {
     const settings = CONFIG.dog.animation;

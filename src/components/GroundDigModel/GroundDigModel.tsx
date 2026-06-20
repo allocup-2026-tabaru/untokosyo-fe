@@ -8,8 +8,17 @@ import { LoadingOverlay } from "./scene/LoadingOverlay";
 import { SceneContent } from "./scene/SceneContent";
 import "./GroundDigModel.css";
 
-export default function GroundDigModel() {
+type Props = {
+  isWaiting?: boolean;
+  playerCount?: number;
+};
+
+const TEMP_PLAYER_COUNT = 3;
+
+export default function GroundDigModel({ isWaiting, playerCount }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const resolvedPlayerCount = playerCount ?? TEMP_PLAYER_COUNT;
+  void isWaiting;
 
   return (
     <div className="ground-dig-root">
@@ -41,7 +50,10 @@ export default function GroundDigModel() {
         }}
       >
         <Suspense fallback={null}>
-          <SceneContent onReady={() => setIsLoaded(true)} />
+          <SceneContent
+            onReady={() => setIsLoaded(true)}
+            playerCount={resolvedPlayerCount}
+          />
         </Suspense>
       </Canvas>
     </div>
