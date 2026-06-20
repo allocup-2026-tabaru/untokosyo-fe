@@ -1,5 +1,5 @@
-import GroundDigModel from "@/components/GroundDigModel/GroundDigModel";
+import GroundDigModel from "@/components/GroundDigModel";
 
 export default function ContentsPage() {
-    return <GroundDigModel />;
+  return <GroundDigModel />;
 }
