@@ -121,6 +121,33 @@ export const CONFIG = {
       fadeDuration: 0.15,
     },
   },
+  jiji2: {
+    path: `${modelBaseUrl}/jiji2.glb`,
+    position: { x: 5, y: 0.3, z: 0 },
+    rotation: { y: -Math.PI / 2 },
+    scale: 0.5,
+    materialColors: {
+      skin: "#f4d7c5",
+      hige: "#3a2a22",
+      nose: "#222222",
+      kami: "#5b3a29",
+      ear: "#e7cdbd",
+      clothBase: "#ffffff",
+      cloth_2: "#ff9900",
+      bottoms: "#aa7744",
+      foot: "#f4d7c5",
+      foot_2: "#222222",
+    },
+    animation: {
+      pullName: "pull",
+      pullOutName: "pull_out",
+      pullSpeed: 1.0,
+      pullOutSpeed: 1.0,
+      pauseAfterPull: 0.4,
+      pauseAfterPullOut: 0.6,
+      fadeDuration: 0.15,
+    },
+  },
 
   forest: {
     paths: [`${modelBaseUrl}/tree.glb`, `${modelBaseUrl}/tree2.glb`],
