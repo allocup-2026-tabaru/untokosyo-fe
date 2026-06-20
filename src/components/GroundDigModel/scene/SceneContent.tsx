@@ -8,7 +8,7 @@ import { FenceField } from "../models/FenceField";
 import { Forest } from "../models/Forest";
 import { Ground } from "../models/Ground";
 import { StaticModel } from "../models/StaticModel";
-import { createRandom, randomRange, shuffleArray } from "../utils/groundDigModelUtils";
+import { createRandom, pick, randomRange } from "../utils/groundDigModelUtils";
 import { SceneLights } from "./SceneLights";
 import { SkyDome } from "./SkyDome";
 
@@ -18,6 +18,7 @@ type Props = {
 };
 
 type DogPlacement = {
+  characterModel: (typeof CONFIG.characterModels)[number];
   transform: {
     position: {
       x: number;
@@ -39,20 +40,18 @@ const getDogPlacements = (playerCount: number): DogPlacement[] => {
     return [];
   }
 
-  const rng = createRandom(CONFIG.seed + safeCount * 97);
-  const delaySlots = shuffleArray(
-    rng,
-    Array.from({ length: safeCount }, () => randomRange(rng, 0, 650)),
-  );
-  const basePosition = CONFIG.dog.position;
-  const baseRotationY = CONFIG.dog.rotation.y ?? 0;
+  const baseCharacterModel = CONFIG.characterModels[0];
+  const basePosition = baseCharacterModel.position;
+  const baseRotationY = baseCharacterModel.rotation.y ?? 0;
   const spacing = safeCount === 1 ? 0 : Math.min(1.0, 2.6 / (safeCount - 1));
   const centerOffset = (safeCount - 1) / 2;
 
   return Array.from({ length: safeCount }, (_, index) => {
     const offset = index - centerOffset;
+    const rng = createRandom(CONFIG.seed + safeCount * 97 + index * 53);
 
     return {
+      characterModel: pick(rng, CONFIG.characterModels),
       transform: {
         position: {
           x: basePosition.x + offset * spacing,
@@ -62,16 +61,16 @@ const getDogPlacements = (playerCount: number): DogPlacement[] => {
         rotation: {
           y: baseRotationY + offset * 0.06,
         },
-        scale: CONFIG.dog.scale,
+        scale: baseCharacterModel.scale,
       },
-      startDelayMs: delaySlots[index],
+      startDelayMs: randomRange(rng, 0, 650),
     };
   });
 };
 
 export function SceneContent({ onReady, playerCount = 1 }: Props) {
   const hasNotifiedReadyRef = useRef(false);
-  const dogPlacements = useMemo(() => getDogPlacements(playerCount), [playerCount]);
+  const characterPlacements = useMemo(() => getDogPlacements(playerCount), [playerCount]);
 
   useEffect(() => {
     if (hasNotifiedReadyRef.current) {
@@ -115,11 +114,12 @@ export function SceneContent({ onReady, playerCount = 1 }: Props) {
         transform={CONFIG.models.rope2}
         meshOptions={{ castShadow: true, receiveShadow: true }}
       />
-      {dogPlacements.map((transform, index) => (
+      {characterPlacements.map((placement, index) => (
         <DogModel
           key={`${index}-${playerCount}`}
-          transform={transform.transform}
-          startDelayMs={transform.startDelayMs}
+          characterModel={placement.characterModel}
+          transform={placement.transform}
+          startDelayMs={placement.startDelayMs}
         />
       ))}
       <FenceField />

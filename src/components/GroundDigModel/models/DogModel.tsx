@@ -5,7 +5,11 @@ import * as THREE from "three";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
-import { CONFIG, type TransformConfig } from "../config/groundDigModelConfig";
+import {
+  CONFIG,
+  type CharacterModelConfig,
+  type TransformConfig,
+} from "../config/groundDigModelConfig";
 import {
   applyTransform,
   recolorNamedMaterials,
@@ -13,28 +17,33 @@ import {
 } from "../utils/groundDigModelUtils";
 
 type Props = {
+  characterModel?: CharacterModelConfig;
   transform?: TransformConfig;
   startDelayMs?: number;
 };
 
-export function DogModel({ transform, startDelayMs = 0 }: Props) {
+export function DogModel({
+  characterModel = CONFIG.characterModels[0],
+  transform,
+  startDelayMs = 0,
+}: Props) {
   const groupRef = useRef<THREE.Group>(null);
-  const { scene, animations } = useGLTF(CONFIG.dog.path) as GLTF;
+  const { scene, animations } = useGLTF(characterModel.path) as GLTF;
   const { actions, mixer } = useAnimations(animations, groupRef);
 
-  const model = useMemo(() => {
+  const clonedModel = useMemo(() => {
     const cloned = SkeletonUtils.clone(scene) as THREE.Group;
-    applyTransform(cloned, transform ?? CONFIG.dog);
-    recolorNamedMaterials(cloned, CONFIG.dog.materialColors);
+    applyTransform(cloned, transform ?? characterModel);
+    recolorNamedMaterials(cloned, characterModel.materialColors);
     setupMeshes(cloned, {
       castShadow: true,
       receiveShadow: true,
     });
     return cloned;
-  }, [scene, transform]);
+  }, [scene, transform, characterModel]);
 
   useEffect(() => {
-    const settings = CONFIG.dog.animation;
+    const settings = characterModel.animation;
     const pullAction = actions[settings.pullName];
     const pullOutAction = actions[settings.pullOutName];
 
@@ -87,13 +96,15 @@ export function DogModel({ transform, startDelayMs = 0 }: Props) {
       }
       mixer.stopAllAction();
     };
-  }, [actions, mixer, startDelayMs]);
+  }, [actions, characterModel.animation, mixer, startDelayMs]);
 
   return (
     <group ref={groupRef}>
-      <primitive object={model} />
+      <primitive object={clonedModel} />
     </group>
   );
 }
 
-useGLTF.preload(CONFIG.dog.path);
+for (const characterModel of CONFIG.characterModels) {
+  useGLTF.preload(characterModel.path);
+}

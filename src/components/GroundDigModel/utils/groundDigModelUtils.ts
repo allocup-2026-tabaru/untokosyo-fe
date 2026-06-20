@@ -19,7 +19,7 @@ export const randomRange = (rng: () => number, min: number, max: number) => {
   return min + rng() * (max - min);
 };
 
-export const shuffleArray = <T,>(rng: () => number, items: T[]) => {
+export const shuffleArray = <T,>(rng: () => number, items: readonly T[]) => {
   const result = [...items];
 
   for (let index = result.length - 1; index > 0; index -= 1) {
@@ -30,7 +30,7 @@ export const shuffleArray = <T,>(rng: () => number, items: T[]) => {
   return result;
 };
 
-export const pick = <T,>(rng: () => number, items: T[]): T => {
+export const pick = <T,>(rng: () => number, items: readonly T[]): T => {
   return items[Math.floor(rng() * items.length)];
 };
 
