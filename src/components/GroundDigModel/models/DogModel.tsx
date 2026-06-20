@@ -14,9 +14,10 @@ import {
 
 type Props = {
   transform?: TransformConfig;
+  startDelayMs?: number;
 };
 
-export function DogModel({ transform }: Props) {
+export function DogModel({ transform, startDelayMs = 0 }: Props) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(CONFIG.dog.path) as GLTF;
   const { actions, mixer } = useAnimations(animations, groupRef);
@@ -77,7 +78,7 @@ export function DogModel({ transform }: Props) {
     };
 
     mixer.addEventListener("finished", onFinished);
-    playNext();
+    timeoutId = window.setTimeout(playNext, startDelayMs);
 
     return () => {
       mixer.removeEventListener("finished", onFinished);
@@ -86,7 +87,7 @@ export function DogModel({ transform }: Props) {
       }
       mixer.stopAllAction();
     };
-  }, [actions, mixer]);
+  }, [actions, mixer, startDelayMs]);
 
   return (
     <group ref={groupRef}>

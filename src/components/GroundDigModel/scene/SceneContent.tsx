@@ -8,6 +8,7 @@ import { FenceField } from "../models/FenceField";
 import { Forest } from "../models/Forest";
 import { Ground } from "../models/Ground";
 import { StaticModel } from "../models/StaticModel";
+import { createRandom, randomRange, shuffleArray } from "../utils/groundDigModelUtils";
 import { SceneLights } from "./SceneLights";
 import { SkyDome } from "./SkyDome";
 
@@ -16,13 +17,33 @@ type Props = {
   playerCount?: number;
 };
 
-const getDogPlacements = (playerCount: number) => {
+type DogPlacement = {
+  transform: {
+    position: {
+      x: number;
+      y: number;
+      z: number;
+    };
+    rotation: {
+      y: number;
+    };
+    scale: number;
+  };
+  startDelayMs: number;
+};
+
+const getDogPlacements = (playerCount: number): DogPlacement[] => {
   const safeCount = Math.max(0, Math.floor(playerCount));
 
   if (safeCount === 0) {
     return [];
   }
 
+  const rng = createRandom(CONFIG.seed + safeCount * 97);
+  const delaySlots = shuffleArray(
+    rng,
+    Array.from({ length: safeCount }, () => randomRange(rng, 0, 650)),
+  );
   const basePosition = CONFIG.dog.position;
   const baseRotationY = CONFIG.dog.rotation.y ?? 0;
   const spacing = safeCount === 1 ? 0 : Math.min(1.0, 2.6 / (safeCount - 1));
@@ -32,15 +53,18 @@ const getDogPlacements = (playerCount: number) => {
     const offset = index - centerOffset;
 
     return {
-      position: {
-        x: basePosition.x + offset * spacing,
-        y: basePosition.y,
-        z: basePosition.z + Math.abs(offset) * 0.12,
+      transform: {
+        position: {
+          x: basePosition.x + offset * spacing,
+          y: basePosition.y,
+          z: basePosition.z + Math.abs(offset) * 0.12,
+        },
+        rotation: {
+          y: baseRotationY + offset * 0.06,
+        },
+        scale: CONFIG.dog.scale,
       },
-      rotation: {
-        y: baseRotationY + offset * 0.06,
-      },
-      scale: CONFIG.dog.scale,
+      startDelayMs: delaySlots[index],
     };
   });
 };
@@ -94,7 +118,8 @@ export function SceneContent({ onReady, playerCount = 1 }: Props) {
       {dogPlacements.map((transform, index) => (
         <DogModel
           key={`${index}-${playerCount}`}
-          transform={transform}
+          transform={transform.transform}
+          startDelayMs={transform.startDelayMs}
         />
       ))}
       <FenceField />
