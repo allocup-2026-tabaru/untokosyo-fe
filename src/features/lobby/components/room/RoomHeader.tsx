@@ -14,7 +14,7 @@ export function RoomHeader({ roomId }: Props) {
             ルーム作成
           </h1>
         </div>
-        <p className="rounded-full bg-[#edf3e6] px-4 py-2 text-sm font-medium text-[#4f6d25]">
+        <p className="rounded-full bg-[#edf3e6] px-5 py-3 text-base font-semibold text-[#4f6d25]">
           Room ID: {roomId}
         </p>
       </div>
