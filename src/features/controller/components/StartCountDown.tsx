@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Panel } from "@/components/ui/Panel";
 import { ModalOverlay } from "@/components/ui/ModalOverlay";
-import { ControllerScene } from "../scene/ControllerScene";
-import { PullArrowIndicator } from "./PullArrowIndicator";
+import { Panel } from "@/components/ui/Panel";
 
 type StartCountDownProps = {
   onStart: () => void;
@@ -17,12 +15,23 @@ export function StartCountDown({
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
-    // 実行開始
-    setCount(1);
+    console.log("カウントダウン開始");
 
-    const timer1 = setTimeout(() => setCount(2), 1000);
-    const timer2 = setTimeout(() => setCount(1), 2000);
+    // 最初は3
+    setCount(3);
+
+    const timer1 = setTimeout(() => {
+      console.log("2");
+      setCount(2);
+    }, 1000);
+
+    const timer2 = setTimeout(() => {
+      console.log("1");
+      setCount(1);
+    }, 2000);
+
     const timer3 = setTimeout(() => {
+      console.log("終了");
       setCount(null);
       onStart();
     }, 3000);
@@ -34,28 +43,36 @@ export function StartCountDown({
     };
   }, [onStart]);
 
+  // count が変わるたびに確認
+  useEffect(() => {
+    console.log("count =", count);
+  }, [count]);
+
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-
       <Canvas
         className="absolute inset-0 z-10"
         camera={{
           position: [0, 0, 10],
           fov: 45,
         }}
-      >
-        {/* カウント表示 */}
-      </Canvas>
+      />
 
       {count !== null && (
         <ModalOverlay>
-        <div className="flex h-full w-full items-center justify-center">
+          <div className="flex h-full w-full items-center justify-center">
             <Panel className="w-full max-w-sm">
-                <h2 className="text-xl font-semibold tracking-[-0.02em] text-text-primary">
-                    {count}
+              <div className="flex flex-col items-center gap-4">
+                <h2 className="text-8xl font-bold text-text-primary">
+                  {count}
                 </h2>
+
+                <p className="text-sm text-text-secondary">
+                  count = {count}
+                </p>
+              </div>
             </Panel>
-        </div>
+          </div>
         </ModalOverlay>
       )}
     </div>
