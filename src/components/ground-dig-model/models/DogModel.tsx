@@ -193,7 +193,8 @@ export function DogModel({
     }
 
     const debugConfig = window.__untokosyoKabuRopeRigDebug;
-    if (!debugConfig?.kabuEscape) {
+    const kabuEscapeActive = (debugConfig?.kabuEscape ?? false) || slipWhenKabuEscapes;
+    if (!kabuEscapeActive) {
       hasStoppedOnKabuEscapeRef.current = false;
       slipTriggerQueuedRef.current = false;
       if (slipTimeoutRef.current !== undefined) {
@@ -228,7 +229,7 @@ export function DogModel({
 
     slipTriggerQueuedRef.current = true;
     slipTimeoutRef.current = window.setTimeout(() => {
-      if (!window.__untokosyoKabuRopeRigDebug?.kabuEscape || hasSlippedRef.current) {
+      if (hasSlippedRef.current) {
         slipTriggerQueuedRef.current = false;
         return;
       }
@@ -247,7 +248,7 @@ export function DogModel({
       slipAction.paused = false;
       slipAction.fadeIn(characterModel.animation.fadeDuration);
       slipAction.play();
-    }, debugConfig.slipDelayMs ?? DEFAULT_SLIP_DELAY_MS);
+    }, debugConfig?.slipDelayMs ?? DEFAULT_SLIP_DELAY_MS);
   });
 
   return (
