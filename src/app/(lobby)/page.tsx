@@ -1,4 +1,4 @@
-import { StartLobbyView } from "@/features/lobby/components/StartLobbyView";
+import { StartLobbyView } from "@/features/lobby/components/start/StartLobbyView";
 
 export default function HomePage() {
   return <StartLobbyView />;

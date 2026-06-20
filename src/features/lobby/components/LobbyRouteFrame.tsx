@@ -1,10 +1,11 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { LobbyBackgroundScene } from "../scene/LobbyBackgroundScene";
 
 type Props = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export function LobbyRouteFrame({ children }: Props) {

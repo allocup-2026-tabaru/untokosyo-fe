@@ -1,4 +1,12 @@
-export const mockParticipants = [
+export type LobbyParticipant = {
+  id: string;
+  name: string;
+  character: string;
+  status: string;
+  accentClassName: string;
+};
+
+export const mockParticipants: readonly LobbyParticipant[] = [
   {
     id: "host",
     name: "Player 1",
