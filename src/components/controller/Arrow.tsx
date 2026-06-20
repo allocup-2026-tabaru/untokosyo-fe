@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useFrame } from "@react-three/fiber";
 import { Color, Vector3 } from "three";
 
 const MAX_PULL = 3;
@@ -12,8 +13,14 @@ export default function PullArrowIndicator() {
   const [dragLength, setDragLength] =
     useState(0);
 
+  const [shake, setShake] =
+    useState(0);
+
   const startPos =
     useRef<Vector3 | null>(null);
+
+  const vibratedLevel =
+    useRef(0);
 
   useEffect(() => {
     const onPointerDown = (
@@ -28,6 +35,7 @@ export default function PullArrowIndicator() {
 
       setDragLength(0);
       setDragging(true);
+      vibratedLevel.current = 0;
     };
 
     const onPointerMove = (
@@ -52,18 +60,60 @@ export default function PullArrowIndicator() {
           startPos.current
         );
 
-      setDragLength(
+      const nextDragLength =
         Math.min(
           length / 100,
           MAX_PULL
-        )
+        );
+
+      setDragLength(
+        nextDragLength
       );
+
+      const charge =
+        Math.min(
+          nextDragLength /
+            MAX_PULL,
+          1
+        );
+
+      if (
+        "vibrate" in navigator &&
+        charge > 0.3 &&
+        vibratedLevel.current < 1
+      ) {
+        navigator.vibrate(10);
+        vibratedLevel.current = 1;
+      }
+
+      if (
+        "vibrate" in navigator &&
+        charge > 0.6 &&
+        vibratedLevel.current < 2
+      ) {
+        navigator.vibrate([
+          15,
+          20,
+          15,
+        ]);
+        vibratedLevel.current = 2;
+      }
+
+      if (
+        "vibrate" in navigator &&
+        charge > 0.95 &&
+        vibratedLevel.current < 3
+      ) {
+        navigator.vibrate(40);
+        vibratedLevel.current = 3;
+      }
     };
 
     const onPointerUp = () => {
       setDragging(false);
       setDragLength(0);
       startPos.current = null;
+      vibratedLevel.current = 0;
     };
 
     window.addEventListener(
@@ -98,6 +148,36 @@ export default function PullArrowIndicator() {
       );
     };
   }, [dragging]);
+
+  useFrame(({ clock }) => {
+    if (
+      !dragging ||
+      dragLength <= 0.05
+    ) {
+      setShake(0);
+      return;
+    }
+
+    const charge = Math.min(
+      dragLength / MAX_PULL,
+      1
+    );
+
+    const frequency =
+      10 + charge * 40;
+
+    const amplitude =
+      0.02 +
+      charge * 0.05;
+
+    const nextShake =
+      Math.sin(
+        clock.elapsedTime *
+          frequency
+      ) * amplitude;
+
+    setShake(nextShake);
+  });
 
   if (
     !dragging ||
@@ -145,7 +225,14 @@ export default function PullArrowIndicator() {
     );
 
   return (
-    <group renderOrder={10}>
+    <group
+      renderOrder={10}
+      position={[
+        shake,
+        0,
+        0,
+      ]}
+    >
       <mesh
         position={[
           shaftCenter.x,
