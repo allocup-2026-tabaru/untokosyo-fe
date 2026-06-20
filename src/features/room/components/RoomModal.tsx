@@ -15,8 +15,6 @@ export function RoomModal({ roomId, isVisible, onStart }: Props) {
       }`}
       aria-hidden={!isVisible}
     >
-      <div className="absolute inset-0 bg-black/18 backdrop-blur-[1px]" />
-
       <div className="relative flex h-full w-full flex-col gap-4 p-4 sm:p-6 lg:p-8">
         <RoomQrCard
           className="pointer-events-auto w-fit max-w-full rounded-[1rem] border border-white/10 bg-black/[0.28] text-white shadow-[0_24px_64px_rgba(0,0,0,0.22)] backdrop-blur-lg lg:absolute lg:left-8 lg:top-8"
