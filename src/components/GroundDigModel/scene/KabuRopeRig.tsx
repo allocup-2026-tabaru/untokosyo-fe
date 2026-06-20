@@ -25,6 +25,7 @@ type Props = {
   } | null;
   motionWindow?: RelativeMotionWindowConfig;
   startDelayMs?: number;
+  showDebugAxis?: boolean;
   kabuMeshOptions?: MeshOptions;
   ropeMeshOptions?: MeshOptions;
   kabuTransform?: TransformConfig;
@@ -37,13 +38,16 @@ const DEFAULT_MOTION_WINDOW: RelativeMotionWindowConfig = {
 };
 
 const TILT_ANGLE_RAD = -0.1;
-const PIVOT_Y_OFFSET = 0.1;
+const PIVOT_X_OFFSET = -2.5;
+const PIVOT_Y_OFFSET = -2;
+const DEBUG_AXIS_HALF_LENGTH = 1.25;
 
 export function KabuRopeRig({
   animation = CONFIG.characterModels[0].animation,
   animationTimings = null,
   motionWindow = CONFIG.models.rope2.motionWindow ?? DEFAULT_MOTION_WINDOW,
   startDelayMs = 0,
+  showDebugAxis = false,
   kabuMeshOptions,
   ropeMeshOptions,
   kabuTransform = CONFIG.models.kabu,
@@ -72,7 +76,7 @@ export function KabuRopeRig({
 
     const kabuBounds = new THREE.Box3().setFromObject(kabu);
     const pivot = new THREE.Vector3(
-      kabuBounds.max.x,
+      kabuBounds.max.x + PIVOT_X_OFFSET,
       (kabuBounds.min.y + kabuBounds.max.y) / 2 + PIVOT_Y_OFFSET,
       (kabuBounds.min.z + kabuBounds.max.z) / 2
     );
@@ -87,8 +91,23 @@ export function KabuRopeRig({
     rigGroup.add(kabu);
     rigGroup.add(rope);
 
+    if (showDebugAxis) {
+      const axisGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 0, -DEBUG_AXIS_HALF_LENGTH),
+        new THREE.Vector3(0, 0, DEBUG_AXIS_HALF_LENGTH),
+      ]);
+      const axisMaterial = new THREE.LineBasicMaterial({
+        color: 0xff0000,
+        transparent: true,
+        opacity: 0.9,
+      });
+      const axisLine = new THREE.Line(axisGeometry, axisMaterial);
+      axisLine.name = "KabuRopeRigAxis";
+      rigGroup.add(axisLine);
+    }
+
     return rigGroup;
-  }, [kabuMeshOptions, kabuScene, kabuTransform, ropeMeshOptions, ropeScene, ropeTransform]);
+  }, [kabuMeshOptions, kabuScene, kabuTransform, ropeMeshOptions, ropeScene, ropeTransform, showDebugAxis]);
 
   useEffect(() => {
     rigRef.current = rig;
