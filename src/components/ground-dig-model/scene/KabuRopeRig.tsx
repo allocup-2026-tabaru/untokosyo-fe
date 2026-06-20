@@ -81,12 +81,7 @@ export function KabuRopeRig({
   const { scene: ropeScene } = useGLTF(CONFIG.models.rope.path) as unknown as GLTF;
   const rigRef = useRef<THREE.Group | null>(null);
   const phaseRef = useRef<"pull" | "pull_out" | null>(null);
-  const phaseStartTimeRef = useRef(0);
   const phaseTotalDurationMsRef = useRef(0);
-  const phaseMotionStartMsRef = useRef(0);
-  const phaseMotionEndMsRef = useRef(0);
-  const phaseStartRotationRef = useRef(0);
-  const targetRotationRef = useRef(0);
   const timeoutRef = useRef<number | undefined>(undefined);
 
   const rig = useMemo(() => {
@@ -152,55 +147,26 @@ export function KabuRopeRig({
       }
     };
 
-    const schedulePhase = (phase: "pull" | "pull_out") => {
+    const schedulePull = () => {
       const timings = animationTimings;
       if (!timings) {
         return;
       }
 
-      const startRatio = THREE.MathUtils.clamp(motionWindow.startRatio, 0, 1);
-      const endRatio = THREE.MathUtils.clamp(motionWindow.endRatio, 0, 1);
-      const normalizedStartRatio = Math.min(startRatio, endRatio);
-      const normalizedEndRatio = Math.max(startRatio, endRatio);
-
-      const totalDurationMs =
-        phase === "pull" ? timings.pullDurationMs : timings.pullOutDurationMs;
-
-      phaseRef.current = phase;
-      phaseStartRotationRef.current = rigRef.current?.rotation.z ?? 0;
-      phaseStartTimeRef.current = performance.now();
-      phaseTotalDurationMsRef.current = totalDurationMs;
-      phaseMotionStartMsRef.current = totalDurationMs * normalizedStartRatio;
-      phaseMotionEndMsRef.current = totalDurationMs * normalizedEndRatio;
-      targetRotationRef.current =
-        phase === "pull" ? TILT_ANGLE_RAD * getTiltScale() : 0;
-
-      const pauseMs =
-        phase === "pull"
-          ? animation.pauseAfterPull * 1000
-          : animation.pauseAfterPullOut * 1000;
-      const nextPhase: "pull" | "pull_out" = phase === "pull" ? "pull_out" : "pull";
-
-      timeoutRef.current = window.setTimeout(() => {
-        schedulePhase(nextPhase);
-      }, pauseMs + totalDurationMs);
+      phaseRef.current = "pull";
+      phaseTotalDurationMsRef.current = timings.pullDurationMs;
     };
 
     clearTimer();
     phaseRef.current = null;
-    phaseStartRotationRef.current = rigRef.current?.rotation.z ?? 0;
-    phaseStartTimeRef.current = 0;
     phaseTotalDurationMsRef.current = 0;
-    phaseMotionStartMsRef.current = 0;
-    phaseMotionEndMsRef.current = 0;
-    targetRotationRef.current = 0;
 
     const initialDelayMs =
       startAtMs !== undefined
         ? Math.max(0, startAtMs - performance.now())
         : startDelayMs;
     timeoutRef.current = window.setTimeout(() => {
-      schedulePhase("pull");
+      schedulePull();
     }, initialDelayMs);
 
     return clearTimer;
@@ -213,37 +179,11 @@ export function KabuRopeRig({
     }
 
     if (!phaseRef.current || phaseTotalDurationMsRef.current <= 0) {
-      current.rotation.z = targetRotationRef.current;
+      current.rotation.z = 0;
       return;
     }
 
-    const elapsedMs = performance.now() - phaseStartTimeRef.current;
-
-    if (elapsedMs <= phaseMotionStartMsRef.current) {
-      current.rotation.z = phaseStartRotationRef.current;
-      return;
-    }
-
-    if (elapsedMs >= phaseMotionEndMsRef.current) {
-      current.rotation.z = targetRotationRef.current;
-      return;
-    }
-
-    const motionDurationMs = Math.max(
-      phaseMotionEndMsRef.current - phaseMotionStartMsRef.current,
-      1
-    );
-    const progress = THREE.MathUtils.clamp(
-      (elapsedMs - phaseMotionStartMsRef.current) / motionDurationMs,
-      0,
-      1
-    );
-
-    current.rotation.z = THREE.MathUtils.lerp(
-      phaseStartRotationRef.current,
-      targetRotationRef.current,
-      progress
-    );
+    current.rotation.z = TILT_ANGLE_RAD * getTiltScale();
   });
 
   return <primitive object={rig} />;
