@@ -1,10 +1,11 @@
 import Link from "next/link";
 
 type Props = {
-  roomId: string;
+  onConfirm: () => void;
+  disabled: boolean;
 };
 
-export function RoomActions({ roomId }: Props) {
+export function RoomActions({ onConfirm, disabled }: Props) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
       <Link
@@ -13,12 +14,13 @@ export function RoomActions({ roomId }: Props) {
       >
         スタートに戻る
       </Link>
-      <Link
-        href={`/${roomId}`}
-        className="inline-flex items-center justify-center rounded-full bg-[#d57b2f] px-6 py-4 text-base font-semibold text-white shadow-[0_12px_30px_rgba(182,94,28,0.28)] transition hover:bg-[#c96e20]"
+      <button
+        onClick={onConfirm}
+        disabled={disabled}
+        className="inline-flex items-center justify-center rounded-full bg-[#d57b2f] px-6 py-4 text-base font-semibold text-white shadow-[0_12px_30px_rgba(182,94,28,0.28)] transition hover:bg-[#c96e20] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         作成
-      </Link>
+      </button>
     </div>
   );
 }
