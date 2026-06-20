@@ -10,7 +10,7 @@ export function RoomLobbyView() {
     <LobbyPageShell align="end">
       <LobbyPanel className="w-full max-w-2xl">
         <div className="space-y-6">
-          <RoomHeader />
+          <RoomHeader roomId={LOBBY_ROOM_ID} />
           <RoomHowToPlay />
           <RoomActions roomId={LOBBY_ROOM_ID} />
         </div>
