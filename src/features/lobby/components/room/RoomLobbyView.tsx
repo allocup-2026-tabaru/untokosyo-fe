@@ -1,10 +1,9 @@
-import { mockParticipants } from "../../constants/mockParticipants";
 import { LOBBY_ROOM_ID } from "../../constants/lobbyRoom";
 import { LobbyPageShell } from "../layout/LobbyPageShell";
 import { LobbyPanel } from "../layout/LobbyPanel";
 import { RoomActions } from "./RoomActions";
+import { RoomHowToPlay } from "./RoomHowToPlay";
 import { RoomHeader } from "./RoomHeader";
-import { RoomSummaryCard } from "./RoomSummaryCard";
 
 export function RoomLobbyView() {
   return (
@@ -12,7 +11,7 @@ export function RoomLobbyView() {
       <LobbyPanel className="w-full max-w-2xl">
         <div className="space-y-6">
           <RoomHeader />
-          <RoomSummaryCard participantCount={mockParticipants.length} roomId={LOBBY_ROOM_ID} />
+          <RoomHowToPlay />
           <RoomActions roomId={LOBBY_ROOM_ID} />
         </div>
       </LobbyPanel>
