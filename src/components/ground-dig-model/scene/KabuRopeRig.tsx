@@ -160,7 +160,7 @@ export function KabuRopeRig({
     if (typeof window !== "undefined" && !window.__untokosyoKabuRopeRigDebug) {
       // DevTools から `window.__untokosyoKabuRopeRigDebug.enableVibration = false` のように変更する。
       window.__untokosyoKabuRopeRigDebug = {
-        enableVibration: true,
+        enableVibration: false,
         vibrationAmplitudeRad: DEFAULT_VIBRATION_AMPLITUDE_RAD,
         vibrationIntervalMs: DEFAULT_VIBRATION_INTERVAL_MS,
       };
