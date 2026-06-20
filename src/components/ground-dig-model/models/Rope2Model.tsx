@@ -33,6 +33,7 @@ type Props = {
 const ROPE2_SHIFT_X = 0.18;
 const DEFAULT_ROPE2_ESCAPE_DISTANCE_X = 400;
 const DEFAULT_ROPE2_ESCAPE_DURATION_MS = 450;
+const DEFAULT_ROPE2_ESCAPE_DROP_Y = -1;
 const DEFAULT_MOTION_WINDOW: RelativeMotionWindowConfig = {
   startRatio: 0,
   endRatio: 1,
@@ -59,6 +60,7 @@ export function Rope2Model({
   const timeoutRef = useRef<number | undefined>(undefined);
   const rope2EscapeStartAtMsRef = useRef<number | null>(null);
   const rope2EscapeStartXRef = useRef(targetXRef.current);
+  const rope2EscapeStartYRef = useRef(transform.position?.y ?? CONFIG.models.rope2.position.y);
 
   const model = useMemo(() => {
     const cloned = prepareStaticObject(scene, meshOptions);
@@ -116,6 +118,7 @@ export function Rope2Model({
     clearTimer();
     targetXRef.current = baseX;
     rope2EscapeStartXRef.current = baseX;
+    rope2EscapeStartYRef.current = transform.position?.y ?? CONFIG.models.rope2.position.y;
     phaseRef.current = null;
     phaseStartXRef.current = baseX;
     phaseStartTimeRef.current = 0;
@@ -167,12 +170,14 @@ export function Rope2Model({
     if (!debugConfig?.kabuEscape) {
       rope2EscapeStartAtMsRef.current = null;
       rope2EscapeStartXRef.current = current.position.x;
+      rope2EscapeStartYRef.current = current.position.y;
       return;
     }
 
     if (rope2EscapeStartAtMsRef.current === null) {
       rope2EscapeStartAtMsRef.current = now;
       rope2EscapeStartXRef.current = current.position.x;
+      rope2EscapeStartYRef.current = current.position.y;
     }
 
     const escapeDurationMs = Math.max(
@@ -183,10 +188,16 @@ export function Rope2Model({
       0,
       debugConfig.rope2EscapeDistanceX ?? DEFAULT_ROPE2_ESCAPE_DISTANCE_X
     );
+    const escapeDropY = debugConfig.rope2EscapeDropY ?? DEFAULT_ROPE2_ESCAPE_DROP_Y;
     const escapeElapsedMs = now - rope2EscapeStartAtMsRef.current;
     const escapeProgress = THREE.MathUtils.clamp(escapeElapsedMs / escapeDurationMs, 0, 1);
     const escapeEased = 1 - Math.pow(1 - escapeProgress, 3);
     current.position.x = rope2EscapeStartXRef.current + escapeDistanceX * escapeEased;
+    current.position.y = THREE.MathUtils.lerp(
+      rope2EscapeStartYRef.current,
+      escapeDropY,
+      escapeEased
+    );
   });
 
   return <primitive object={model} />;

@@ -47,7 +47,7 @@ const DEFAULT_KABU_ESCAPE_DISTANCE = 10;
 const DEFAULT_KABU_ESCAPE_DURATION_MS = 450;
 const DEFAULT_ROPE_ESCAPE_DISTANCE = 8;
 const DEFAULT_ROPE_ESCAPE_DURATION_MS = 450;
-const DEFAULT_SLIP_DELAY_MS = 180;
+const DEFAULT_SLIP_DELAY_MS = 100;
 
 type KabuRopeRigDebugConfig = {
   enableVibration?: boolean;
@@ -60,6 +60,7 @@ type KabuRopeRigDebugConfig = {
   ropeEscapeDurationMs?: number;
   rope2EscapeDistanceX?: number;
   rope2EscapeDurationMs?: number;
+  rope2EscapeDropY?: number;
   slipDelayMs?: number;
 };
 
@@ -253,6 +254,7 @@ export function KabuRopeRig({
         ropeEscapeDurationMs: DEFAULT_ROPE_ESCAPE_DURATION_MS,
         rope2EscapeDistanceX: 4,
         rope2EscapeDurationMs: DEFAULT_KABU_ESCAPE_DURATION_MS,
+        rope2EscapeDropY: -1,
         slipDelayMs: DEFAULT_SLIP_DELAY_MS,
       };
       console.info(
@@ -322,6 +324,7 @@ export function KabuRopeRig({
     const kabu = kabuRef.current;
     if (kabu) {
       if (!isKabuEscapeEnabled()) {
+        kabu.visible = true;
         kabu.position.copy(kabuBasePositionRef.current);
         kabuEscapeStartAtMsRef.current = null;
         kabuEscapeStartPositionRef.current.copy(kabuBasePositionRef.current);
@@ -339,12 +342,14 @@ export function KabuRopeRig({
 
         kabu.position.copy(kabuEscapeStartPositionRef.current);
         kabu.position.y = kabuEscapeStartPositionRef.current.y + escapeDistance * eased;
+        kabu.visible = progress < 1;
       }
     }
 
     const rope = ropeRef.current;
     if (rope) {
       if (!isKabuEscapeEnabled()) {
+        rope.visible = true;
         rope.position.copy(ropeBasePositionRef.current);
         ropeEscapeStartAtMsRef.current = null;
         ropeEscapeStartPositionRef.current.copy(ropeBasePositionRef.current);
@@ -362,6 +367,7 @@ export function KabuRopeRig({
 
         rope.position.copy(ropeEscapeStartPositionRef.current);
         rope.position.y = ropeEscapeStartPositionRef.current.y + escapeDistance * eased;
+        rope.visible = progress < 1;
       }
     }
 

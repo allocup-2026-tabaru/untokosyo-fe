@@ -54,14 +54,19 @@ export function DogModel({
   const { scene, animations } = useGLTF(characterModel.path) as unknown as GLTF;
   const { actions, mixer } = useAnimations(animations, groupRef);
 
+  const getPlayableActions = () =>
+    Object.values(actions).filter(
+      (action): action is THREE.AnimationAction => action !== null
+    );
+
   const pauseAllActions = () => {
-    Object.values(actions).forEach((action) => {
+    getPlayableActions().forEach((action) => {
       action.paused = true;
     });
   };
 
   const resumeAllActions = () => {
-    Object.values(actions).forEach((action) => {
+    getPlayableActions().forEach((action) => {
       action.paused = false;
     });
   };
