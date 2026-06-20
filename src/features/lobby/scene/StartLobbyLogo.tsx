@@ -1,16 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
 import { Billboard, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 
 export function StartLobbyLogo() {
-  const texture = useTexture("/title_cutout.png");
-
-  useEffect(() => {
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.needsUpdate = true;
-  }, [texture]);
+  const texture = useTexture("/title_cutout.png", (loadedTexture) => {
+    loadedTexture.colorSpace = THREE.SRGBColorSpace;
+    loadedTexture.needsUpdate = true;
+  });
 
   return (
     <Billboard position={[-5.55, 2.3, 2]}>
