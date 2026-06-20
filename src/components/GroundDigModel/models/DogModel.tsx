@@ -20,12 +20,17 @@ type Props = {
   characterModel?: CharacterModelConfig;
   transform?: TransformConfig;
   startDelayMs?: number;
+  onAnimationTimings?: (timings: {
+    pullDurationMs: number;
+    pullOutDurationMs: number;
+  }) => void;
 };
 
 export function DogModel({
   characterModel = CONFIG.characterModels[0],
   transform,
   startDelayMs = 0,
+  onAnimationTimings,
 }: Props) {
   const groupRef = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(characterModel.path) as GLTF;
@@ -57,6 +62,13 @@ export function DogModel({
     pullOutAction.clampWhenFinished = true;
     pullAction.timeScale = settings.pullSpeed;
     pullOutAction.timeScale = settings.pullOutSpeed;
+
+    onAnimationTimings?.({
+      pullDurationMs:
+        (pullAction.getClip().duration / Math.max(settings.pullSpeed, 0.01)) * 1000,
+      pullOutDurationMs:
+        (pullOutAction.getClip().duration / Math.max(settings.pullOutSpeed, 0.01)) * 1000,
+    });
 
     let currentAction: THREE.AnimationAction | null = null;
     let shouldPlayPull = true;
@@ -96,7 +108,7 @@ export function DogModel({
       }
       mixer.stopAllAction();
     };
-  }, [actions, characterModel.animation, mixer, startDelayMs]);
+  }, [actions, characterModel.animation, mixer, onAnimationTimings, startDelayMs]);
 
   return (
     <group ref={groupRef}>

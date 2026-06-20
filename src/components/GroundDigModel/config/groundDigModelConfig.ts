@@ -117,7 +117,7 @@ export const CONFIG = {
     },
     rope2: {
       path: `${modelBaseUrl}/rope2.glb`,
-      position: { x: 3, y: 0.1, z: 0 },
+      position: { x: 2.5, y: 0.1, z: 0 },
       rotation: { y: 0 },
       scale: 1,
     },

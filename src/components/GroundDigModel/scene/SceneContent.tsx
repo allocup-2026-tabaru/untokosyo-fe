@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { OrbitControls } from "@react-three/drei";
 import { CONFIG } from "../config/groundDigModelConfig";
 import { DogModel } from "../models/DogModel";
 import { FenceField } from "../models/FenceField";
 import { Forest } from "../models/Forest";
 import { Ground } from "../models/Ground";
+import { Rope2Model } from "../models/Rope2Model";
 import { StaticModel } from "../models/StaticModel";
 import { createRandom, pick, randomRange } from "../utils/groundDigModelUtils";
 import { SceneLights } from "./SceneLights";
@@ -70,7 +71,12 @@ const getDogPlacements = (playerCount: number): DogPlacement[] => {
 
 export function SceneContent({ onReady, playerCount = 1 }: Props) {
   const hasNotifiedReadyRef = useRef(false);
+  const [rope2AnimationTimings, setRope2AnimationTimings] = useState<{
+    pullDurationMs: number;
+    pullOutDurationMs: number;
+  } | null>(null);
   const characterPlacements = useMemo(() => getDogPlacements(playerCount), [playerCount]);
+  const activeCharacterPlacement = characterPlacements[0];
 
   useEffect(() => {
     if (hasNotifiedReadyRef.current) {
@@ -109,10 +115,12 @@ export function SceneContent({ onReady, playerCount = 1 }: Props) {
         transform={CONFIG.models.rope}
         meshOptions={{ castShadow: true, receiveShadow: true }}
       />
-      <StaticModel
-        url={CONFIG.models.rope2.path}
+      <Rope2Model
         transform={CONFIG.models.rope2}
         meshOptions={{ castShadow: true, receiveShadow: true }}
+        animation={activeCharacterPlacement?.characterModel.animation}
+        animationTimings={rope2AnimationTimings}
+        startDelayMs={activeCharacterPlacement?.startDelayMs ?? 0}
       />
       {characterPlacements.map((placement, index) => (
         <DogModel
@@ -120,6 +128,7 @@ export function SceneContent({ onReady, playerCount = 1 }: Props) {
           characterModel={placement.characterModel}
           transform={placement.transform}
           startDelayMs={placement.startDelayMs}
+          onAnimationTimings={index === 0 ? setRope2AnimationTimings : undefined}
         />
       ))}
       <FenceField />
