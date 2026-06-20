@@ -3,8 +3,8 @@
 import { Suspense, useMemo, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { CONFIG } from "@/components/GroundDigModel/config/groundDigModelConfig";
-import { LoadingOverlay } from "@/components/GroundDigModel/scene/LoadingOverlay";
+import { CONFIG } from "@/components/ground-dig-model/config/groundDigModelConfig";
+import { LoadingOverlay } from "@/components/ground-dig-model/scene/LoadingOverlay";
 import { LobbySceneContent, type LobbySceneVariant } from "./LobbySceneContent";
 
 type Props = {

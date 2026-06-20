@@ -3,12 +3,12 @@
 import { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { CONFIG } from "../../components/GroundDigModel/config/groundDigModelConfigController";
-import { LoadingOverlay } from "../../components/GroundDigModel/scene/LoadingOverlay";
-import { SceneContent } from "../../components/GroundDigModel/scene/SceneContentController";
-import "./BackGroundModel.css";
+import { CONFIG } from "../config/controllerSceneConfig";
+import { LoadingOverlay } from "@/components/ground-dig-model/scene/LoadingOverlay";
+import { ControllerSceneContent } from "./ControllerSceneContent";
+import "@/components/ground-dig-model/GroundDigModel.css";
 
-export default function BackGroundModel() {
+export function ControllerScene() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
@@ -41,10 +41,9 @@ export default function BackGroundModel() {
         }}
       >
         <Suspense fallback={null}>
-          <SceneContent onReady={() => setIsLoaded(true)} />
+          <ControllerSceneContent onReady={() => setIsLoaded(true)} />
         </Suspense>
       </Canvas>
     </div>
   );
-
 }

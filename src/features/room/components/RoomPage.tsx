@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import GroundDigModel from "@/components/GroundDigModel";
+import { RoomScene } from "@/features/room/scene/RoomScene";
+import { mockRoomParticipants } from "../constants/mockRoomParticipants";
 import { RoomModal } from "./RoomModal";
 
 type Props = {
@@ -11,9 +12,16 @@ type Props = {
 export function RoomPage({ roomId }: Props) {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(true);
 
+  // TODO: WebSocket 接続後はリアルタイムの参加者データに差し替え
+  const playerNames = mockRoomParticipants.map((p) => p.name);
+
   return (
     <main className="relative min-h-screen overflow-hidden">
-      <GroundDigModel isWaiting={isRoomModalVisible} />
+      <RoomScene
+        playerCount={playerNames.length}
+        playerNames={playerNames}
+        isWaiting={isRoomModalVisible}
+      />
       <RoomModal
         roomId={roomId}
         isVisible={isRoomModalVisible}

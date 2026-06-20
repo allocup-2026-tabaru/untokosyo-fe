@@ -3,34 +3,24 @@
 import { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { CONFIG } from "./config/groundDigModelConfig";
-import { LoadingOverlay } from "./scene/LoadingOverlay";
-import { SceneContent } from "./scene/SceneContent";
-import "./GroundDigModel.css";
+import { CONFIG } from "@/components/ground-dig-model/config/groundDigModelConfig";
+import { LoadingOverlay } from "@/components/ground-dig-model/scene/LoadingOverlay";
+import { RoomSceneContent } from "./RoomSceneContent";
+import "@/components/ground-dig-model/GroundDigModel.css";
 
 type Props = {
+  playerCount: number;
+  playerNames: string[];
   isWaiting?: boolean;
-  playerCount?: number;
-  playerNames?: string[];
   playerLabelHeight?: number;
 };
 
-const TEMP_PLAYER_COUNT = 3;
-
-const getTempPlayerNames = (count: number) =>
-  Array.from({ length: count }, (_, index) => `player${index + 1}`);
-
-export default function GroundDigModel({
-  isWaiting,
+export function RoomScene({
   playerCount,
   playerNames,
   playerLabelHeight = 2,
 }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
-  const resolvedPlayerCount = playerCount ?? TEMP_PLAYER_COUNT;
-  const resolvedPlayerNames =
-    playerNames?.length ? playerNames : getTempPlayerNames(resolvedPlayerCount);
-  void isWaiting;
 
   return (
     <div className="ground-dig-root">
@@ -62,10 +52,10 @@ export default function GroundDigModel({
         }}
       >
         <Suspense fallback={null}>
-          <SceneContent
+          <RoomSceneContent
             onReady={() => setIsLoaded(true)}
-            playerCount={resolvedPlayerCount}
-            playerNames={resolvedPlayerNames}
+            playerCount={playerCount}
+            playerNames={playerNames}
             playerLabelHeight={playerLabelHeight}
           />
         </Suspense>

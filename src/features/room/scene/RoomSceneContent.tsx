@@ -2,17 +2,18 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { OrbitControls } from "@react-three/drei";
-import { CONFIG } from "../config/groundDigModelConfig";
-import { FenceField } from "../models/FenceField";
-import { Forest } from "../models/Forest";
-import { Ground } from "../models/Ground";
-import { KabuRopeRig } from "./KabuRopeRig";
-import { Rope2Model } from "../models/Rope2Model";
-import { StaticModel } from "../models/StaticModel";
-import { getDogPlacements } from "../utils/groundDigModelPlacements";
-import { CharacterPlacement } from "./CharacterPlacement";
-import { SceneLights } from "./SceneLights";
-import { SkyDome } from "./SkyDome";
+import { CONFIG } from "@/components/ground-dig-model/config/groundDigModelConfig";
+import { FenceField } from "@/components/ground-dig-model/models/FenceField";
+import { Forest } from "@/components/ground-dig-model/models/Forest";
+import { Ground } from "@/components/ground-dig-model/models/Ground";
+import { KabuRopeRig } from "@/components/ground-dig-model/scene/KabuRopeRig";
+import { Rope2Model } from "@/components/ground-dig-model/models/Rope2Model";
+import { StaticModel } from "@/components/ground-dig-model/models/StaticModel";
+import { getDogPlacements } from "@/components/ground-dig-model/utils/groundDigModelPlacements";
+import { CharacterPlacement } from "@/components/ground-dig-model/scene/CharacterPlacement";
+import { SceneLights } from "@/components/ground-dig-model/scene/SceneLights";
+import { SkyDome } from "@/components/ground-dig-model/scene/SkyDome";
+import { ROOM_PLACEMENT_CONFIG } from "../config/roomPlacementConfig";
 
 type Props = {
   onReady?: () => void;
@@ -21,7 +22,7 @@ type Props = {
   playerLabelHeight?: number;
 };
 
-export function SceneContent({
+export function RoomSceneContent({
   onReady,
   playerCount = 1,
   playerNames = [],
@@ -33,7 +34,7 @@ export function SceneContent({
     pullOutDurationMs: number;
   } | null>(null);
   const characterPlacements = useMemo(
-    () => getDogPlacements(playerCount),
+    () => getDogPlacements(playerCount, ROOM_PLACEMENT_CONFIG),
     [playerCount]
   );
   const activeCharacterPlacement = characterPlacements[0];

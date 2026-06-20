@@ -10,7 +10,7 @@ type Props = {
   operate: boolean;
 };
 
-export default function PullArrowIndicator({
+export function PullArrowIndicator({
   operate,
 }: Props) {
   const [dragging, setDragging] =

@@ -1,15 +1,15 @@
-import type { LobbyParticipant } from "../../constants/mockParticipants";
-import { ParticipantCard } from "../participant/ParticipantCard";
+import type { Participant } from "@/shared/types/participant";
+import { ParticipantCard } from "@/components/ui/ParticipantCard";
 
 type Props = {
-  participants: readonly LobbyParticipant[];
+  participants: readonly Participant[];
 };
 
 export function RoomParticipantList({ participants }: Props) {
   return (
     <section className="space-y-3">
       {participants.map((participant) => (
-        <ParticipantCard key={participant.id} {...participant} />
+        <ParticipantCard key={participant.id} participant={participant} variant="light" />
       ))}
     </section>
   );

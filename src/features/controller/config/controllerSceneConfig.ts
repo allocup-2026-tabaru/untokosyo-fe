@@ -100,48 +100,6 @@ export const CONFIG = {
     },
   },
 
-  dog: {
-    path: `${modelBaseUrl}/dog.glb`,
-    position: { x: 5, y: 0.3, z: 0 },
-    rotation: { y: -Math.PI / 2 },
-    scale: 0.5,
-    materialColors: {
-      base_color: "#9d7b5a",
-      accent_color: "#b48a63",
-      nose_color: "#222222",
-      tail_color: "#ab805a",
-    },
-    animation: {
-      pullName: "pull",
-      pullOutName: "pull_out",
-      pullSpeed: 1.0,
-      pullOutSpeed: 1.0,
-      pauseAfterPull: 0.4,
-      pauseAfterPullOut: 0.6,
-      fadeDuration: 0.15,
-    },
-  },
-  jiji2: {
-    path: `${modelBaseUrl}/jiji2.glb`,
-    position: { x: 5, y: 0.3, z: 0 },
-    rotation: { y: -Math.PI / 2 },
-    scale: 0.5,
-    materialColors: {
-      clothBase: "#f6f0e6",
-      cloth_2: "#8a7f73",
-      bottoms: "#6a5b50",
-    },
-    animation: {
-      pullName: "pull",
-      pullOutName: "pull_out",
-      pullSpeed: 1.0,
-      pullOutSpeed: 1.0,
-      pauseAfterPull: 0.4,
-      pauseAfterPullOut: 0.6,
-      fadeDuration: 0.15,
-    },
-  },
-
   forest: {
     paths: [`${modelBaseUrl}/tree.glb`, `${modelBaseUrl}/tree2.glb`],
     count: 100,
@@ -181,23 +139,4 @@ export type TransformConfig = {
 export type MeshOptions = {
   castShadow?: boolean;
   receiveShadow?: boolean;
-};
-
-export type Placement = {
-  position: [number, number, number];
-  rotationY: number;
-  scale: number;
-};
-
-export type ForestPlacement = {
-  position: [number, number, number];
-  rotationY: number;
-  scale: number;
-  treeIndex: number;
-};
-
-export type StaticModelProps = {
-  url: string;
-  transform: TransformConfig;
-  meshOptions?: MeshOptions;
 };
