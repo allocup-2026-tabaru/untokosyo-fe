@@ -24,6 +24,17 @@ export const CONFIG = {
     maxPixelRatio: 2,
   },
 
+  lobbyCameraPresets: {
+    start: {
+      position: [1.4, 3.2, 8.7],
+      target: [0.1, 0.45, -0.2],
+    },
+    room: {
+      position: [5.3, 3.3, 7.4],
+      target: [4, 0.45, -0.2],
+    },
+  },
+
   lights: {
     hemisphere: {
       skyColor: 0xeaf7ff,
