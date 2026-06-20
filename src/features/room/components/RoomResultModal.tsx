@@ -7,6 +7,8 @@ type Props = {
 };
 
 const rankLabel = (index: number) => `${index + 1}位`;
+const formatPullPower = (pullPower?: number) =>
+  `${pullPower ?? 0} Pull Power`;
 
 export function RoomResultModal({ participants, isVisible }: Props) {
   return (
@@ -27,7 +29,7 @@ export function RoomResultModal({ participants, isVisible }: Props) {
               {participants.map((participant, index) => (
                 <div
                   key={participant.id}
-                  className="flex items-center gap-4 rounded-[1.1rem] bg-black/16 px-4 py-3 ring-1 ring-white/8"
+                  className="grid grid-cols-[4rem_1fr_auto] items-center gap-4 rounded-[1.1rem] bg-black/16 px-4 py-3 ring-1 ring-white/8"
                 >
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-white">
                     {rankLabel(index)}
@@ -36,7 +38,11 @@ export function RoomResultModal({ participants, isVisible }: Props) {
                     <p className="truncate text-lg font-semibold text-white">
                       {participant.name}
                     </p>
-                    <p className="text-sm text-white/60">{participant.characterModel}</p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-base font-semibold text-white">
+                      {formatPullPower(participant.pullPower)}
+                    </p>
                   </div>
                 </div>
               ))}

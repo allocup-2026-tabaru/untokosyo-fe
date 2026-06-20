@@ -8,6 +8,7 @@ export const mockRoomParticipants: readonly Participant[] = [
     status: "準備完了",
     accentClassName: "from-[#f0b36a] to-[#bf5f24]",
     slipOnKabuEscape: false,
+    pullPower: 92,
   },
   {
     id: "guest-1",
@@ -16,6 +17,7 @@ export const mockRoomParticipants: readonly Participant[] = [
     status: "準備中",
     accentClassName: "from-[#8abf63] to-[#356d30]",
     slipOnKabuEscape: true,
+    pullPower: 76,
   },
   {
     id: "guest-2",
@@ -24,5 +26,6 @@ export const mockRoomParticipants: readonly Participant[] = [
     status: "準備中",
     accentClassName: "from-[#96b6d9] to-[#3f6294]",
     slipOnKabuEscape: false,
+    pullPower: 64,
   },
 ] as const;

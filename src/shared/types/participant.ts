@@ -7,4 +7,5 @@ export type Participant = {
   status: ParticipantStatus;
   accentClassName: string;
   slipOnKabuEscape?: boolean;
+  pullPower?: number;
 };
