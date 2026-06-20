@@ -1,16 +1,33 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ControllerScene } from "@/features/controller/scene/ControllerScene";
 import { PullArrowIndicator } from "./PullArrowIndicator";
 import { NameInputScreen } from "./NameInputScreen";
 import { StartCountDown } from "./StartCountDown";
-import { usePlayerController } from "@/features/game/hooks/usePlayerController";
 import { ModalOverlay } from "@/components/ui/ModalOverlay";
 import { Panel } from "@/components/ui/Panel";
+import { joinRoom as joinRoomApi } from "@/infrastructure/http/roomApi";
+import { PlayerWebSocketClient } from "@/infrastructure/websocket/PlayerWebSocketClient";
+import type { PlayerServerEvent } from "@/infrastructure/websocket/types";
+import { CONFIG } from "@/components/ground-dig-model/config/groundDigModelConfig";
+import {
+  createRandomSource,
+  createDogMaterialColors,
+  createJiji2MaterialColors,
+} from "@/components/ground-dig-model/config/groundDigModelColorUtils";
+import { pick, randomRange } from "@/components/ground-dig-model/utils/groundDigModelUtils";
 
 type Phase = "name_input" | "lobby" | "countdown" | "playing" | "eliminated" | "finished";
+
+type PlayerState = {
+  status: string;
+  playerStatus: string;
+  isPulling: boolean;
+  myPullAccumulation: number;
+  myRank: number | null;
+};
 
 type Props = {
   roomId: string;
@@ -18,18 +35,64 @@ type Props = {
 
 export function ControllerClient({ roomId }: Props) {
   const [phase, setPhase] = useState<Phase>("name_input");
-  const [connectPending, setConnectPending] = useState(false);
-  const { playerID, playerState, scheduledStartAt, joinRoom, connectWs, pull, release } =
-    usePlayerController();
+  const [playerID, setPlayerID] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [playerState, setPlayerState] = useState<PlayerState | null>(null);
+  const [scheduledStartAt, setScheduledStartAt] = useState<number | null>(null);
+  const clientRef = useRef<PlayerWebSocketClient | null>(null);
 
-  // joinRoom 完了後に playerID が確定してから WS 接続する
+  // playerIDとtokenが確定したらWS接続
   useEffect(() => {
-    if (playerID && connectPending) {
-      connectWs(roomId);
-      setConnectPending(false);
-    }
-  }, [playerID, connectPending, connectWs, roomId]);
+    if (!playerID || !token) return;
 
+    const client = new PlayerWebSocketClient();
+    clientRef.current = client;
+
+    client.onEvent((event: PlayerServerEvent) => {
+      if (event.type === "room_state") {
+        setPlayerState({
+          status: event.payload.status,
+          playerStatus: "active",
+          isPulling: false,
+          myPullAccumulation: event.payload.myPullAccumulation,
+          myRank: null,
+        });
+      } else if (event.type === "game_countdown") {
+        setScheduledStartAt(event.payload.scheduledStartAt);
+      } else if (event.type === "game_start") {
+        setPlayerState((prev) => (prev ? { ...prev, status: "playing" } : null));
+      } else if (event.type === "player_update") {
+        setPlayerState((prev) => {
+          if (!prev) return prev;
+          return event.payload.playerID === playerID
+            ? { ...prev, isPulling: event.payload.isPulling }
+            : prev;
+        });
+      } else if (event.type === "eliminated") {
+        setPlayerState((prev) => (prev ? { ...prev, playerStatus: "eliminated" } : null));
+      } else if (event.type === "game_finished") {
+        setPlayerState((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: "finished",
+                myPullAccumulation: event.payload.myPullAccumulation,
+                myRank: event.payload.myRank,
+              }
+            : null
+        );
+      }
+    });
+
+    client.connect(roomId, playerID, token);
+
+    return () => {
+      client.disconnect();
+      clientRef.current = null;
+    };
+  }, [playerID, token, roomId]);
+
+  // phase遷移
   useEffect(() => {
     if (scheduledStartAt !== null && phase === "lobby") {
       setPhase("countdown");
@@ -56,12 +119,33 @@ export function ControllerClient({ roomId }: Props) {
 
   const handleNameSubmit = useCallback(
     async (name: string) => {
-      await joinRoom(roomId, name);
-      setConnectPending(true);
+      const characterModel = pick(createRandomSource(), CONFIG.characterModels);
+      const baseHue = randomRange(createRandomSource(), 0, 360);
+      const playerIndex = Math.floor(randomRange(createRandomSource(), 0, 20));
+      const materialColors =
+        characterModel.id === "jiji2"
+          ? createJiji2MaterialColors(baseHue, playerIndex)
+          : createDogMaterialColors(baseHue, playerIndex);
+
+      const res = await joinRoomApi(roomId, name, characterModel.id, materialColors);
+      setPlayerID(res.playerID);
+      setToken(res.token);
       setPhase("lobby");
     },
-    [roomId, joinRoom]
+    [roomId]
   );
+
+  const pull = useCallback(() => {
+    if (!playerID || !clientRef.current) return;
+    clientRef.current.send({ type: "pull", playerID, clientTimestamp: Date.now() });
+    setPlayerState((prev) => (prev ? { ...prev, isPulling: true } : prev));
+  }, [playerID]);
+
+  const release = useCallback(() => {
+    if (!playerID || !clientRef.current) return;
+    clientRef.current.send({ type: "release", playerID, clientTimestamp: Date.now() });
+    setPlayerState((prev) => (prev ? { ...prev, isPulling: false } : prev));
+  }, [playerID]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
