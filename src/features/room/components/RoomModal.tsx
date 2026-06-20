@@ -1,0 +1,62 @@
+import type { RoomParticipant } from "../constants/mockRoomParticipants";
+import { RoomParticipantList } from "./RoomParticipantList";
+import { RoomQrCard } from "./RoomQrCard";
+import { RoomSummary } from "./RoomSummary";
+import { StartGameButton } from "./StartGameButton";
+
+type Props = {
+  roomId: string;
+  participantCount: number;
+  participants: readonly RoomParticipant[];
+  isVisible: boolean;
+  onStart: () => void;
+};
+
+export function RoomModal({
+  roomId,
+  participantCount,
+  participants,
+  isVisible,
+  onStart,
+}: Props) {
+  return (
+    <div
+      className={`absolute inset-0 z-10 flex items-start justify-center overflow-y-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-10 ${
+        isVisible ? "pointer-events-auto" : "pointer-events-none opacity-0"
+      } transition-opacity duration-300`}
+      aria-hidden={!isVisible}
+    >
+      <div className="absolute inset-0 bg-[#1d241d]/48 backdrop-blur-[2px]" />
+      <section className="relative mt-4 flex w-full max-w-6xl flex-col overflow-hidden rounded-[2rem] border border-white/55 bg-[rgba(255,247,236,0.92)] shadow-[0_30px_90px_rgba(17,22,12,0.32)] backdrop-blur-xl sm:mt-8 lg:max-h-[calc(100vh-4rem)]">
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#d57b2f] via-[#e8c07a] to-[#5b7b3b]" />
+        <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[1.1fr_1fr] lg:p-8">
+          <div className="space-y-6">
+            <RoomSummary roomId={roomId} participantCount={participantCount} />
+            <RoomQrCard roomId={roomId} />
+          </div>
+          <div className="flex min-h-0 flex-col gap-5 lg:max-h-[calc(100vh-10rem)]">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium tracking-[0.24em] text-[#7a5a25] uppercase">
+                  Participants
+                </p>
+                <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#2e2719]">
+                  参加者一覧
+                </h2>
+              </div>
+              <p className="rounded-full bg-[#efe4cc] px-4 py-2 text-sm font-semibold text-[#7a5d24]">
+                {participantCount}人参加中
+              </p>
+            </div>
+            <div className="min-h-0 flex-1">
+              <RoomParticipantList participants={participants} />
+            </div>
+            <div className="pt-2">
+              <StartGameButton onClick={onStart} />
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
