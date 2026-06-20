@@ -7,6 +7,7 @@ import { DogModel } from "../models/DogModel";
 import { FenceField } from "../models/FenceField";
 import { Forest } from "../models/Forest";
 import { Ground } from "../models/Ground";
+import { KabuRopeRig } from "./KabuRopeRig";
 import { Rope2Model } from "../models/Rope2Model";
 import { StaticModel } from "../models/StaticModel";
 import { createRandom, pick, randomRange } from "../utils/groundDigModelUtils";
@@ -105,15 +106,13 @@ export function SceneContent({ onReady, playerCount = 1 }: Props) {
         transform={CONFIG.models.dig}
         meshOptions={{ castShadow: false, receiveShadow: true }}
       />
-      <StaticModel
-        url={CONFIG.models.kabu.path}
-        transform={CONFIG.models.kabu}
-        meshOptions={{ castShadow: true, receiveShadow: true }}
-      />
-      <StaticModel
-        url={CONFIG.models.rope.path}
-        transform={CONFIG.models.rope}
-        meshOptions={{ castShadow: true, receiveShadow: true }}
+      <KabuRopeRig
+        animation={activeCharacterPlacement?.characterModel.animation}
+        animationTimings={rope2AnimationTimings}
+        startDelayMs={activeCharacterPlacement?.startDelayMs ?? 0}
+        motionWindow={CONFIG.models.rope2.motionWindow}
+        kabuMeshOptions={{ castShadow: true, receiveShadow: true }}
+        ropeMeshOptions={{ castShadow: true, receiveShadow: true }}
       />
       <Rope2Model
         transform={CONFIG.models.rope2}
