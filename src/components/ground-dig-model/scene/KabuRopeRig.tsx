@@ -43,9 +43,13 @@ const PIVOT_X_OFFSET = -2.5;
 const PIVOT_Y_OFFSET = -2;
 const DEBUG_AXIS_HALF_LENGTH = 1.25;
 const DEFAULT_TILT_SCALE = 1;
+const DEFAULT_WOBBLE_AMPLITUDE_RAD = 0.01;
+const DEFAULT_WOBBLE_SPEED = 3.5;
 
 type KabuRopeRigDebugConfig = {
   tiltScale?: number;
+  wobbleAmplitudeRad?: number;
+  wobbleSpeed?: number;
 };
 
 declare global {
@@ -65,6 +69,29 @@ const getTiltScale = () => {
   return Math.max(0, tiltScale);
 };
 
+const getWobbleAmplitudeRad = () => {
+  if (typeof window === "undefined") {
+    return DEFAULT_WOBBLE_AMPLITUDE_RAD;
+  }
+
+  const debugConfig = window.__untokosyoKabuRopeRigDebug;
+  const wobbleAmplitudeRad =
+    debugConfig?.wobbleAmplitudeRad ?? DEFAULT_WOBBLE_AMPLITUDE_RAD;
+
+  return Math.max(0, wobbleAmplitudeRad);
+};
+
+const getWobbleSpeed = () => {
+  if (typeof window === "undefined") {
+    return DEFAULT_WOBBLE_SPEED;
+  }
+
+  const debugConfig = window.__untokosyoKabuRopeRigDebug;
+  const wobbleSpeed = debugConfig?.wobbleSpeed ?? DEFAULT_WOBBLE_SPEED;
+
+  return Math.max(0, wobbleSpeed);
+};
+
 export function KabuRopeRig({
   animation = CONFIG.characterModels[0].animation,
   animationTimings = null,
@@ -82,6 +109,7 @@ export function KabuRopeRig({
   const rigRef = useRef<THREE.Group | null>(null);
   const phaseRef = useRef<"pull" | "pull_out" | null>(null);
   const phaseTotalDurationMsRef = useRef(0);
+  const phaseStartAtMsRef = useRef(0);
   const timeoutRef = useRef<number | undefined>(undefined);
 
   const rig = useMemo(() => {
@@ -155,11 +183,13 @@ export function KabuRopeRig({
 
       phaseRef.current = "pull";
       phaseTotalDurationMsRef.current = timings.pullDurationMs;
+      phaseStartAtMsRef.current = performance.now();
     };
 
     clearTimer();
     phaseRef.current = null;
     phaseTotalDurationMsRef.current = 0;
+    phaseStartAtMsRef.current = 0;
 
     const initialDelayMs =
       startAtMs !== undefined
@@ -183,7 +213,13 @@ export function KabuRopeRig({
       return;
     }
 
-    current.rotation.z = TILT_ANGLE_RAD * getTiltScale();
+    const baseRotation = TILT_ANGLE_RAD * getTiltScale();
+    const wobbleAmplitudeRad = getWobbleAmplitudeRad();
+    const wobbleSpeed = getWobbleSpeed();
+    const elapsedSeconds = (performance.now() - phaseStartAtMsRef.current) / 1000;
+    const wobble = Math.sin(elapsedSeconds * Math.PI * 2 * wobbleSpeed) * wobbleAmplitudeRad;
+
+    current.rotation.z = baseRotation + wobble;
   });
 
   return <primitive object={rig} />;
