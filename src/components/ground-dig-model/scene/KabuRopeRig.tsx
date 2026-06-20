@@ -45,6 +45,7 @@ const DEFAULT_VIBRATION_AMPLITUDE_RAD = 0.005;
 const DEFAULT_VIBRATION_INTERVAL_MS = 100;
 const DEFAULT_KABU_ESCAPE_DISTANCE = 10;
 const DEFAULT_KABU_ESCAPE_DURATION_MS = 450;
+const DEFAULT_SLIP_DELAY_MS = 180;
 
 type KabuRopeRigDebugConfig = {
   enableVibration?: boolean;
@@ -53,6 +54,7 @@ type KabuRopeRigDebugConfig = {
   kabuEscape?: boolean;
   kabuEscapeDistance?: number;
   kabuEscapeDurationMs?: number;
+  slipDelayMs?: number;
 };
 
 declare global {
@@ -210,6 +212,7 @@ export function KabuRopeRig({
         kabuEscape: false,
         kabuEscapeDistance: DEFAULT_KABU_ESCAPE_DISTANCE,
         kabuEscapeDurationMs: DEFAULT_KABU_ESCAPE_DURATION_MS,
+        slipDelayMs: DEFAULT_SLIP_DELAY_MS,
       };
       console.info(
         "[KabuRopeRig] debug controls: window.__untokosyoKabuRopeRigDebug.kabuEscape = true"

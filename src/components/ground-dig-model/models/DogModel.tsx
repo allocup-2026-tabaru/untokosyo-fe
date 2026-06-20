@@ -17,6 +17,8 @@ import {
   setupMeshes,
 } from "../utils/groundDigModelUtils";
 
+const DEFAULT_SLIP_DELAY_MS = 180;
+
 type Props = {
   characterModel?: CharacterModelConfig;
   materialColors?: Record<string, string>;
@@ -46,6 +48,8 @@ export function DogModel({
   } | null>(null);
   const hasSlippedRef = useRef(false);
   const loopTimeoutRef = useRef<number | undefined>(undefined);
+  const slipTimeoutRef = useRef<number | undefined>(undefined);
+  const slipTriggerQueuedRef = useRef(false);
   const { scene, animations } = useGLTF(characterModel.path) as unknown as GLTF;
   const { actions, mixer } = useAnimations(animations, groupRef);
 
@@ -147,6 +151,11 @@ export function DogModel({
         window.clearTimeout(loopTimeoutRef.current);
         loopTimeoutRef.current = undefined;
       }
+      if (slipTimeoutRef.current !== undefined) {
+        window.clearTimeout(slipTimeoutRef.current);
+        slipTimeoutRef.current = undefined;
+      }
+      slipTriggerQueuedRef.current = false;
       mixer.stopAllAction();
     };
   }, [
@@ -159,32 +168,49 @@ export function DogModel({
   ]);
 
   useFrame(() => {
-    if (!slipWhenKabuEscapes || hasSlippedRef.current || typeof window === "undefined") {
+    if (
+      !slipWhenKabuEscapes ||
+      hasSlippedRef.current ||
+      typeof window === "undefined"
+    ) {
       return;
     }
 
     const debugConfig = window.__untokosyoKabuRopeRigDebug;
     if (!debugConfig?.kabuEscape) {
+      slipTriggerQueuedRef.current = false;
+      if (slipTimeoutRef.current !== undefined) {
+        window.clearTimeout(slipTimeoutRef.current);
+        slipTimeoutRef.current = undefined;
+      }
       return;
     }
 
     const slipAction = actions.slip;
-    if (!slipAction) {
+    if (!slipAction || slipTriggerQueuedRef.current) {
       return;
     }
 
-    hasSlippedRef.current = true;
-    if (loopTimeoutRef.current !== undefined) {
-      window.clearTimeout(loopTimeoutRef.current);
-      loopTimeoutRef.current = undefined;
-    }
+    slipTriggerQueuedRef.current = true;
+    slipTimeoutRef.current = window.setTimeout(() => {
+      if (!window.__untokosyoKabuRopeRigDebug?.kabuEscape || hasSlippedRef.current) {
+        slipTriggerQueuedRef.current = false;
+        return;
+      }
 
-    mixer.stopAllAction();
-    slipAction.setLoop(THREE.LoopOnce, 1);
-    slipAction.clampWhenFinished = true;
-    slipAction.reset();
-    slipAction.fadeIn(characterModel.animation.fadeDuration);
-    slipAction.play();
+      hasSlippedRef.current = true;
+      if (loopTimeoutRef.current !== undefined) {
+        window.clearTimeout(loopTimeoutRef.current);
+        loopTimeoutRef.current = undefined;
+      }
+
+      mixer.stopAllAction();
+      slipAction.setLoop(THREE.LoopOnce, 1);
+      slipAction.clampWhenFinished = true;
+      slipAction.reset();
+      slipAction.fadeIn(characterModel.animation.fadeDuration);
+      slipAction.play();
+    }, debugConfig.slipDelayMs ?? DEFAULT_SLIP_DELAY_MS);
   });
 
   return (
