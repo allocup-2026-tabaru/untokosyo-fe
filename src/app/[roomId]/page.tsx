@@ -1,10 +1,15 @@
-type Props = { params: Promise<{ roomId: string }> };
+import type { Metadata } from "next";
+import { RoomPage } from "@/features/room/components/RoomPage";
 
-export default async function HostPage({ params }: Props) {
+type Props = {
+  params: Promise<{ roomId: string }>;
+};
+
+export const metadata: Metadata = {
+  title: "ルーム画面",
+};
+
+export default async function RoomRoutePage({ params }: Props) {
   const { roomId } = await params;
-  return (
-    <main className="min-h-screen flex items-center justify-center">
-      <h1 className="text-4xl font-bold">ホスト画面 {roomId}</h1>
-    </main>
-  );
+  return <RoomPage roomId={roomId} />;
 }
