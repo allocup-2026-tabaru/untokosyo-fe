@@ -364,32 +364,26 @@ export function PullArrowIndicator({
   const glow =
     pulse.current;
 
-  const arrowColor =
-    new Color().lerpColors(
-      new Color("#38bdf8"),
-      new Color(
-        `rgb(
-          255,
-          ${
-            68 +
-            glow * 100
-          },
-          ${
-            68 +
-            glow * 30
-          }
-        )`
-      ),
-      charge
-    );
+  const arrowColor = new Color().lerpColors(
+    new Color("#38bdf8"),
+    new Color("rgb(255, 68, 68)"),
+    charge
+  );
 
   const shaftRadius =
-    0.08 +
+    0.23 +
     dragLength * 0.045 +
     pulseScale;
 
+  const baseRadius =
+    0.10 +
+    dragLength * 0.045 +
+    pulseScale;
+
+  const tipRadius = baseRadius * 0.7;
+
   const headRadius =
-    0.54 +
+    0.54+
     charge * 0.04 +
     pulseScale;
 
@@ -441,8 +435,8 @@ export function PullArrowIndicator({
         <cylinderGeometry
           args={[
             shaftRadius,
-            0.005,
-            dragLength,
+            tipRadius,
+            dragLength*0.9,
             32,
           ]}
         />
