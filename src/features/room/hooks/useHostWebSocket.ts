@@ -33,12 +33,14 @@ type HostSessionData = {
 
 async function fetchPlayers(roomID: string): Promise<Player[]> {
   const room = await getRoom(roomID);
-  return Object.values(room.Players).map((p) => ({
-    playerID: p.ID,
-    name: p.Name,
-    avatarModel: p.AvatarModel,
-    materialColors: p.MaterialColors,
-  }));
+  return Object.values(room.Players)
+    .filter((p) => p.Connected)
+    .map((p) => ({
+      playerID: p.ID,
+      name: p.Name,
+      avatarModel: p.AvatarModel,
+      materialColors: p.MaterialColors,
+    }));
 }
 
 function getHostSessionData(roomID: string): HostSessionData | null {
@@ -77,7 +79,7 @@ export function useHostWebSocket(roomID: string) {
     client.onClose(() => setStatus("disconnected"));
 
     client.onEvent((event: HostServerEvent) => {
-      if (event.type === "room_state" || event.type === "player_joined") {
+      if (event.type === "room_state" || event.type === "player_joined" || event.type === "player_left") {
         fetchPlayers(roomID).then(setPlayers).catch(console.error);
       } else if (event.type === "game_start") {
         setGameStatus("playing");
