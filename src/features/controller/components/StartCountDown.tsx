@@ -26,7 +26,7 @@ export function StartCountDown({ scheduledStartAt, onStart }: Props) {
     };
 
     tick();
-    const id = setInterval(tick, 200);
+    const id = setInterval(tick, 500);
     return () => clearInterval(id);
   }, [scheduledStartAt, onStart]);
 
@@ -37,7 +37,7 @@ export function StartCountDown({ scheduledStartAt, onStart }: Props) {
       <div className="flex h-full w-full items-center justify-center">
         <Panel className="w-full max-w-sm">
           <div className="flex flex-col items-center gap-4">
-            <h2 className="text-8xl font-bold text-text-primary">{count}</h2>
+            <h2 className="text-8xl font-bold text-text-primary">{count <= 1 ? 'ドン！' : 'よーい'}</h2>
           </div>
         </Panel>
       </div>
