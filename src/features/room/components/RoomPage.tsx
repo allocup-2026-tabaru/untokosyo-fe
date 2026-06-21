@@ -79,6 +79,11 @@ export function RoomPage({ roomId }: Props) {
     return [...fromStandings, ...notInStandings];
   })();
 
+  const survivorParticipants = resultParticipants.filter((p) => !p.eliminated);
+  const allSortedByPull = [...resultParticipants].sort(
+    (a, b) => (b.pullPower ?? 0) - (a.pullPower ?? 0)
+  );
+
   const handleStart = async () => {
     if (hostPlayerID) {
       await startGame(roomId, hostPlayerID);
@@ -102,7 +107,8 @@ export function RoomPage({ roomId }: Props) {
         onStart={handleStart}
       />
       <RoomResultModal
-        participants={resultParticipants}
+        survivors={survivorParticipants}
+        allParticipants={allSortedByPull}
         isVisible={showResult}
       />
     </main>
