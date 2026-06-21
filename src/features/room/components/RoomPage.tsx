@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RoomScene } from "@/features/room/scene/RoomScene";
 import { useHostWebSocket } from "../hooks/useHostWebSocket";
 import { startGame } from "@/infrastructure/http/roomApi";
@@ -18,12 +18,41 @@ export function RoomPage({ roomId }: Props) {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(true);
   const [showResult, setShowResult] = useState(false);
   const { players, hostPlayerID, gameStatus, eliminatedPlayerIDs, gameResult } = useHostWebSocket(roomId);
+  const pullSoundRef = useRef<HTMLAudioElement | null>(null);
+  const previousEliminatedCountRef = useRef(0);
+
+  useEffect(() => {
+    const audio = new Audio("/pull_sound.mp3");
+    audio.preload = "auto";
+    audio.volume = 1;
+    pullSoundRef.current = audio;
+
+    return () => {
+      audio.pause();
+      pullSoundRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     if (!gameResult) return;
     const timer = setTimeout(() => setShowResult(true), RESULT_SHOW_DELAY_MS);
     return () => clearTimeout(timer);
   }, [gameResult]);
+
+  useEffect(() => {
+    const previousCount = previousEliminatedCountRef.current;
+    const currentCount = eliminatedPlayerIDs.length;
+
+    if (currentCount > previousCount) {
+      const audio = pullSoundRef.current;
+      if (audio) {
+        audio.currentTime = 0;
+        void audio.play().catch(() => {});
+      }
+    }
+
+    previousEliminatedCountRef.current = currentCount;
+  }, [eliminatedPlayerIDs]);
 
   const participantPlayers = useMemo(
     () => players.filter((p) => p.playerID !== hostPlayerID),
@@ -84,7 +113,27 @@ export function RoomPage({ roomId }: Props) {
     (a, b) => (b.pullPower ?? 0) - (a.pullPower ?? 0)
   );
 
+  const unlockPullSound = async () => {
+    const audio = pullSoundRef.current;
+    if (!audio) return;
+
+    try {
+      audio.muted = true;
+      audio.currentTime = 0;
+      await audio.play();
+      audio.pause();
+      audio.currentTime = 0;
+    } catch {
+      // Ignore unlock failures and keep a normal playback attempt for the actual event.
+    } finally {
+      audio.muted = false;
+      audio.volume = 1;
+    }
+  };
+
   const handleStart = async () => {
+    await unlockPullSound();
+
     if (hostPlayerID) {
       await startGame(roomId, hostPlayerID);
     }
