@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useWebSocket } from "@/shared/hooks/useWebSocket";
-import type { CounterMessage } from "@/infrastructure/websocket/types";
+type CounterMessage = { count: number };
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8080/ws";
 
