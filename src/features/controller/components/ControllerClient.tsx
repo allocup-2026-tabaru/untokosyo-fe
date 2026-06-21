@@ -33,6 +33,25 @@ type Props = {
   roomId: string;
 };
 
+type PlayerSessionData = {
+  playerID: string;
+  token: string;
+};
+
+function getPlayerSessionData(roomId: string): PlayerSessionData | null {
+  try {
+    const raw = sessionStorage.getItem(`room_player_${roomId}`);
+    if (!raw) return null;
+    return JSON.parse(raw) as PlayerSessionData;
+  } catch {
+    return null;
+  }
+}
+
+function setPlayerSessionData(roomId: string, session: PlayerSessionData): void {
+  sessionStorage.setItem(`room_player_${roomId}`, JSON.stringify(session));
+}
+
 export function ControllerClient({ roomId }: Props) {
   const [phase, setPhase] = useState<Phase>("name_input");
   const [playerID, setPlayerID] = useState<string | null>(null);
@@ -40,6 +59,15 @@ export function ControllerClient({ roomId }: Props) {
   const [playerState, setPlayerState] = useState<PlayerState | null>(null);
   const [scheduledStartAt, setScheduledStartAt] = useState<number | null>(null);
   const clientRef = useRef<PlayerWebSocketClient | null>(null);
+
+  useEffect(() => {
+    const session = getPlayerSessionData(roomId);
+    if (!session) return;
+
+    setPlayerID(session.playerID);
+    setToken(session.token);
+    setPhase("lobby");
+  }, [roomId]);
 
   // playerIDとtokenが確定したらWS接続
   useEffect(() => {
@@ -57,6 +85,9 @@ export function ControllerClient({ roomId }: Props) {
           myPullAccumulation: event.payload.myPullAccumulation,
           myRank: null,
         });
+        if (event.payload.status === "waiting") {
+          setPhase("lobby");
+        }
       } else if (event.type === "game_countdown") {
         setScheduledStartAt(event.payload.scheduledStartAt);
       } else if (event.type === "game_start") {
@@ -128,6 +159,7 @@ export function ControllerClient({ roomId }: Props) {
           : createDogMaterialColors(baseHue, playerIndex);
 
       const res = await joinRoomApi(roomId, name, characterModel.id, materialColors);
+      setPlayerSessionData(roomId, { playerID: res.playerID, token: res.token });
       setPlayerID(res.playerID);
       setToken(res.token);
       setPhase("lobby");

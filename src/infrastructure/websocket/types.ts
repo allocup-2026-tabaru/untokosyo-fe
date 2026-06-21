@@ -52,6 +52,11 @@ export type PlayerJoinedEvent = {
   payload: { playerID: string; name: string };
 };
 
+export type PlayerLeftEvent = {
+  type: "player_left";
+  payload: { playerID: string };
+};
+
 export type TurnipUpdateEvent = {
   type: "turnip_update";
   payload: { totalPullAccumulation: number; extractionProbability: number };
@@ -75,6 +80,7 @@ export type HostGameFinishedEvent = {
 export type HostServerEvent =
   | HostRoomStateEvent
   | PlayerJoinedEvent
+  | PlayerLeftEvent
   | GameCountdownEvent
   | GameStartEvent
   | PingEvent

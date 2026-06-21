@@ -12,6 +12,7 @@ export type RoomPlayer = {
   ID: string;
   Name: string;
   Status: string;
+  Connected: boolean;
   IsPulling: boolean;
   PullAccumulation: number;
   AvatarModel?: string;
