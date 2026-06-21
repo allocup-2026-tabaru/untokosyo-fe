@@ -29,7 +29,7 @@ export function RoomResultModal({ participants, isVisible }: Props) {
               {participants.map((participant, index) => (
                 <div
                   key={participant.id}
-                  className="grid grid-cols-[4rem_1fr_auto] items-center gap-4 rounded-[1.1rem] bg-black/16 px-4 py-3 ring-1 ring-white/8"
+                  className={`grid grid-cols-[4rem_1fr_auto] items-center gap-4 rounded-[1.1rem] px-4 py-3 ring-1 ${participant.eliminated ? "bg-black/8 opacity-60 ring-white/4" : "bg-black/16 ring-white/8"}`}
                 >
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/12 text-sm font-semibold text-white">
                     {rankLabel(index)}
@@ -38,6 +38,9 @@ export function RoomResultModal({ participants, isVisible }: Props) {
                     <p className="truncate text-lg font-semibold text-white">
                       {participant.name}
                     </p>
+                    {participant.eliminated && (
+                      <p className="text-xs text-red-400">脱落</p>
+                    )}
                   </div>
                   <div className="shrink-0 text-right">
                     <p className="text-base font-semibold text-white">

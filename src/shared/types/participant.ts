@@ -8,4 +8,5 @@ export type Participant = {
   accentClassName: string;
   slipOnKabuEscape?: boolean;
   pullPower?: number;
+  eliminated?: boolean;
 };
