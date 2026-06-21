@@ -28,6 +28,7 @@ type Props = {
     pullOutDurationMs: number;
   } | null;
   motionWindow?: RelativeMotionWindowConfig;
+  kabuEscape?: boolean;
 };
 
 const ROPE2_SHIFT_X = 0.18;
@@ -47,6 +48,7 @@ export function Rope2Model({
   startAtMs,
   animationTimings = null,
   motionWindow = CONFIG.models.rope2.motionWindow ?? DEFAULT_MOTION_WINDOW,
+  kabuEscape,
 }: Props) {
   const { scene } = useGLTF(CONFIG.models.rope2.path) as unknown as GLTF;
   const modelRef = useRef<THREE.Object3D | null>(null);
@@ -167,7 +169,8 @@ export function Rope2Model({
     }
 
     const debugConfig = window.__untokosyoKabuRopeRigDebug;
-    if (!debugConfig?.kabuEscape) {
+    const kabuEscapeActive = kabuEscape ?? debugConfig?.kabuEscape ?? false;
+    if (!kabuEscapeActive) {
       rope2EscapeStartAtMsRef.current = null;
       rope2EscapeStartXRef.current = current.position.x;
       rope2EscapeStartYRef.current = current.position.y;
@@ -182,13 +185,13 @@ export function Rope2Model({
 
     const escapeDurationMs = Math.max(
       16,
-      debugConfig.rope2EscapeDurationMs ?? DEFAULT_ROPE2_ESCAPE_DURATION_MS
+      debugConfig?.rope2EscapeDurationMs ?? DEFAULT_ROPE2_ESCAPE_DURATION_MS
     );
     const escapeDistanceX = Math.max(
       0,
-      debugConfig.rope2EscapeDistanceX ?? DEFAULT_ROPE2_ESCAPE_DISTANCE_X
+      debugConfig?.rope2EscapeDistanceX ?? DEFAULT_ROPE2_ESCAPE_DISTANCE_X
     );
-    const escapeDropY = debugConfig.rope2EscapeDropY ?? DEFAULT_ROPE2_ESCAPE_DROP_Y;
+    const escapeDropY = debugConfig?.rope2EscapeDropY ?? DEFAULT_ROPE2_ESCAPE_DROP_Y;
     const escapeElapsedMs = now - rope2EscapeStartAtMsRef.current;
     const escapeProgress = THREE.MathUtils.clamp(escapeElapsedMs / escapeDurationMs, 0, 1);
     const escapeEased = 1 - Math.pow(1 - escapeProgress, 3);

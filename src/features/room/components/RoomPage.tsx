@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RoomScene } from "@/features/room/scene/RoomScene";
 import { useHostWebSocket } from "../hooks/useHostWebSocket";
 import { startGame } from "@/infrastructure/http/roomApi";
@@ -25,11 +25,23 @@ export function RoomPage({ roomId }: Props) {
     return () => clearTimeout(timer);
   }, [gameResult]);
 
-  const participantPlayers = players.filter((p) => p.playerID !== hostPlayerID);
-  const playerNames = participantPlayers.map((p) => p.name);
-  const avatarPlayers = participantPlayers.filter((p) => p.avatarModel && p.materialColors);
-  const playerAvatars = avatarPlayers.map((p) => ({ avatarModel: p.avatarModel!, materialColors: p.materialColors! }));
-  const playerSlipFlags = avatarPlayers.map((p) => eliminatedPlayerIDs.includes(p.playerID));
+  const participantPlayers = useMemo(
+    () => players.filter((p) => p.playerID !== hostPlayerID),
+    [players, hostPlayerID]
+  );
+  const playerNames = useMemo(() => participantPlayers.map((p) => p.name), [participantPlayers]);
+  const avatarPlayers = useMemo(
+    () => participantPlayers.filter((p) => p.avatarModel && p.materialColors),
+    [participantPlayers]
+  );
+  const playerAvatars = useMemo(
+    () => avatarPlayers.map((p) => ({ avatarModel: p.avatarModel!, materialColors: p.materialColors! })),
+    [avatarPlayers]
+  );
+  const playerSlipFlags = useMemo(
+    () => avatarPlayers.map((p) => eliminatedPlayerIDs.includes(p.playerID)),
+    [avatarPlayers, eliminatedPlayerIDs]
+  );
 
   const resultParticipants: Participant[] = (() => {
     if (!gameResult) return [];

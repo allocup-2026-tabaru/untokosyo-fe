@@ -115,6 +115,7 @@ export function RoomSceneContent({
         animationTimings={rope2AnimationTimings}
         startDelayMs={activeCharacterPlacement?.startDelayMs ?? 0}
         startAtMs={animationStartAtMs}
+        kabuEscape={kabuEscapeTriggered}
       />
       {characterPlacements.map((placement, index) => (
         <CharacterPlacement
